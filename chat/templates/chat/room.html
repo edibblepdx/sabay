@@ -20,9 +20,22 @@
       + '/'
     );
 
+    appendMessage = function(m) {
+      document.querySelector('#chat-log').value +=
+        (`${m.username}: ${m.content}\n`);
+    }
+
     chatSocket.onmessage = function(e) {
       const data = JSON.parse(e.data);
-      document.querySelector('#chat-log').value += (data.message + '\n');
+      if (data.type === 'chat.history') {
+        document.querySelector('#chat-log').value = '';
+        for (const message of data.messages) {
+          appendMessage(message)
+        }
+      }
+      if (data.type === 'chat.message') {
+        appendMessage(data.message)
+      }
     };
 
     chatSocket.onclose = function(e) {
