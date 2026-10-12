@@ -4,6 +4,7 @@ from django.conf import settings
 
 
 class Room(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid7, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     last_message_at = models.DateTimeField(null=True, blank=True)
 
@@ -17,6 +18,7 @@ class RoomMember(models.Model):
 
 
 class Message(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid7, editable=False)
     message = models.TextField(blank=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -25,4 +27,4 @@ class Message(models.Model):
         blank=True,
     )
     room = models.ForeignKey("Room", on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=Now())
