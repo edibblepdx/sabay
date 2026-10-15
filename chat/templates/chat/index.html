@@ -14,18 +14,12 @@
     <div class="message-layout">
       <aside class="conversation-list">
         <ul class="conversation-items">
-          <li class="conversation-item" data-room="olga-room">
-            <span class="converstion-name">Olga</span>
-            <span class="conversation-preview">he-he</span>
-          </li>
-          <li class="conversion-item" data-room="diana-room">
-            <span class="conversation-name">Diana</span>
-            <span class="conversation-preview">diannaaaa</span>
-          </li>
-          <li class="conversion-item" data-room="diana-room">
-            <span class="conversation-name">Diana</span>
-            <span class="conversation-preview">diannaaaa</span>
-          </li>
+          {% for room in room_queryset %}
+            <li class="conversation-item" data-room={{ room.id }}>
+              <span class="converstion-name">{{ room.id }}</span>
+              <span class="conversation-preview">temp preview</span>
+            </li>
+          {% endfor %}
         </ul>
       </aside>
       <section class="active-thread">
