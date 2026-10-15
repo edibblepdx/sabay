@@ -11,7 +11,6 @@ class Room(models.Model):
 
 
 class RoomMember(models.Model):
-    pk = models.CompositePrimaryKey("user_id", "room_id")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     room = models.ForeignKey("Room", on_delete=models.CASCADE)
     joined_at = models.DateTimeField(default=Now())
