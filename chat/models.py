@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.db.models.functions import Now
 from django.conf import settings
+from django.utils import timezone
 
 
 class Room(models.Model):
@@ -13,8 +14,8 @@ class Room(models.Model):
 class RoomMember(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     room = models.ForeignKey("Room", on_delete=models.CASCADE)
-    joined_at = models.DateTimeField(default=Now())
-    read_at = models.DateTimeField(default=Now())
+    joined_at = models.DateTimeField(default=timezone.now)  # keep modifiable
+    read_at = models.DateTimeField(default=timezone.now)  # keep modifiable
 
 
 class Message(models.Model):
