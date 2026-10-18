@@ -22,9 +22,7 @@
           {% endfor %}
         </ul>
       </aside>
-      <section class="active-thread">
-        <p class="placeholder-text">this is where specific converstion theres, clicka person to chat with, converstion opens here</p>
-      </section>
+      {% block conversation %}{% endblock %}
       <div class="sidebar-right">
         <div class="profile-detail">
           <p class="placeholder-text">profile detail of the person being texted</p>
