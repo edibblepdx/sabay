@@ -14,7 +14,9 @@
   <template id="message-template">
     <li class="message">
       <div>
+        <span class="message-author"></span>
         <p class="message-content"></p>
+        <time class="message-date"></time>
       </div>
     </li>
   </template>
@@ -34,8 +36,13 @@
       const template = document.querySelector("#message-template");
       const message = template.content.cloneNode(true);
 
-      message.querySelector(".message-content").textContent =
-        (`${m.username}: ${m.message}\n`);
+      message.querySelector(".message-author").textContent = m.username;
+      message.querySelector(".message-content").textContent = m.message;
+
+      const time = message.querySelector(".message-date");
+      time.dateTime = message.created_at;
+      time.textContent = new Date(m.created_at)
+        .toLocaleTimeString([], {hour: 'numeric', minute:'numeric'});
 
       document.querySelector('#chat-log').appendChild(message);
     }
