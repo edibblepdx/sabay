@@ -4,19 +4,24 @@ from django.contrib.auth.decorators import login_required
 from chat.models import Room, RoomMember
 
 
+def render_chat(request, template_name, context=None, **kwargs):
+    context = {**(context or {}), "room_queryset": Room.objects.all()}
+
+    return render(request, template_name, context, **kwargs)
+
+
 @login_required
 def index(request):
-    room_queryset = Room.objects.all()
-    return render(request, "chat/index.html", {"room_queryset": room_queryset})
+    return render_chat(request, "chat/index.html")
 
 
 @login_required
 def basic(request):
-    return render(request, "chat/basic.html")
+    return render_chat(request, "chat/basic.html")
 
 
 @login_required
-def room(request, room_id):
+def conversation(request, room_id):
     # Check room membership
     _ = get_object_or_404(RoomMember, user=request.user, room=room_id)
-    return render(request, "chat/room.html", {"room_id": room_id})
+    return render_chat(request, "chat/conversation.html", {"room_id": room_id})
