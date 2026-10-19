@@ -1,0 +1,18 @@
+{% load static %}
+
+<ul class="conversation-items">
+  {% for room in room_queryset %}
+    <li class="conversation-item" data-room={{ room.id }}>
+      <span class="converstion-name">{{ room.id }}</span>
+      <span class="conversation-preview">temp preview</span>
+    </li>
+  {% endfor %}
+</ul>
+<script>
+  document.querySelectorAll('.conversation-item').forEach((item) => {
+    item.onclick = function(){
+      var roomName = item.dataset.room;
+      window.location.pathname = '/chat/' + roomName + '/';
+    };
+  });
+</script>
