@@ -11,7 +11,8 @@ The examples use Linux/systemd, Python 3.14, user/group `sabay`, home
 | Collected static files | `/home/sabay/static` |
 | Application environment | `/etc/sabay/app.env` |
 
-Deployment is manual: Actions → Deploy production → Run workflow → main.
+Deployment runs automatically on pushes to `main`, including merged pull requests.
+You can also run it manually: Actions → Deploy production → Run workflow → main.
 The script installs locked dependencies, checks production settings, runs migrations,
 collects static files, restarts Gunicorn and Daphne, and checks the HTTP app through
 local Nginx. It contains no backup logic or automatic rollback. Merging these files
