@@ -1,14 +1,26 @@
-{% extends 'base.html' %}
+{% extends './base.html' %}
+{% load static %}
 
-{% block title %}
-  Sabay chat
-{% endblock %}
+{% block conversation %}
+  <ol id="chat-log"></ol><br>
 
-{% block content %}
-  <textarea id="chat-log" cols="100" rows="20"></textarea><br>
-  <input id="chat-message-input" type="text" size="100"><br>
-  <input id="chat-message-submit" type="button" value="Send">
+  <form id="chat-message-form">
+    <textarea id="chat-message-input" placeholder="Type message..."></textarea>
+    <button id="chat-message-submit" type="submit">Send</button>
+  </form>
+
   {{ room_id|json_script:"room-name" }}
+
+  <template id="message-template">
+    <li class="message">
+      <div>
+        <span class="message-author"></span>
+        <p class="message-content"></p>
+        <time class="message-date"></time>
+      </div>
+    </li>
+  </template>
+
   <script>
     const roomName = JSON.parse(document.getElementById('room-name').textContent);
 
@@ -21,14 +33,24 @@
     );
 
     appendMessage = function(m) {
-      document.querySelector('#chat-log').value +=
-        (`${m.username}: ${m.message}\n`);
+      const template = document.querySelector("#message-template");
+      const message = template.content.cloneNode(true);
+
+      message.querySelector(".message-author").textContent = m.username;
+      message.querySelector(".message-content").textContent = m.message;
+
+      const time = message.querySelector(".message-date");
+      time.dateTime = message.created_at;
+      time.textContent = new Date(m.created_at)
+        .toLocaleTimeString([], {hour: 'numeric', minute:'numeric'});
+
+      document.querySelector('#chat-log').appendChild(message);
     }
 
     chatSocket.onmessage = function(e) {
       const data = JSON.parse(e.data);
       if (data.type === 'chat.history') {
-        document.querySelector('#chat-log').value = '';
+        document.querySelector('#chat-log').replaceChildren();
         for (const message of data.messages) {
           appendMessage(message)
         }
