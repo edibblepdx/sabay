@@ -17,6 +17,14 @@ class RoomMember(models.Model):
     joined_at = models.DateTimeField(default=timezone.now)  # keep modifiable
     read_at = models.DateTimeField(default=timezone.now)  # keep modifiable
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "room"],
+                name="unique_user_room",
+            ),
+        ]
+
 
 class Message(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid7, editable=False)
