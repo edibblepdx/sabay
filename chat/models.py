@@ -25,10 +25,18 @@ class RoomMember(models.Model):
             ),
         ]
 
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            now = timezone.now()
+            self.joined_at = now
+            self.read_at = now
+
+        super(RoomMember, self).save(*args, **kwargs)
+
 
 class Message(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid7, editable=False)
-    message = models.TextField(blank=True)
+    message = models.TextField()
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
