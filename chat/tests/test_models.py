@@ -1,13 +1,12 @@
-import uuid
 import datetime
+import uuid
 
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError, transaction
 from django.test import TestCase
 from django.utils import timezone
-from django.db import IntegrityError, transaction
 
-from chat.models import Room, RoomMember, Message
-
+from chat.models import Message, Room, RoomMember
 
 User = get_user_model()
 

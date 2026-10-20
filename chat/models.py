@@ -1,7 +1,8 @@
 import uuid
+
+from django.conf import settings
 from django.db import models
 from django.db.models.functions import Now
-from django.conf import settings
 from django.utils import timezone
 
 
@@ -31,7 +32,7 @@ class RoomMember(models.Model):
             self.joined_at = now
             self.read_at = now
 
-        super(RoomMember, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
 
 class Message(models.Model):
