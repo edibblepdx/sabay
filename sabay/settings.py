@@ -10,11 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+DJANGO_ENV = os.getenv("DJANGO_ENV")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -77,11 +79,21 @@ ASGI_APPLICATION = "sabay.asgi.application"
 
 CHANNEL_LAYERS = {
     "default": {
-        # "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-        "CONFIG": {
-            # "hosts": [{"address": "redis://redis:6379", "socket_timeout": None}],
-        },
+        **(
+            {
+                "BACKEND": "channels_redis.core.RedisChannelLayer",
+                "CONFIG": {
+                    "hosts": [
+                        {"address": "redis://redis:6379", "socket_timeout": None}
+                    ],
+                },
+            }
+            if DJANGO_ENV == "production"
+            else {
+                "BACKEND": "channels.layers.InMemoryChannelLayer",
+                "CONFIG": {},
+            }
+        )
     },
 }
 
