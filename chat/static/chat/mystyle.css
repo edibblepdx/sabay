@@ -102,7 +102,7 @@ body {
   border-bottom: 1px solid #eee;
 }
 .chat-page .conversation-item:hover {
-  background-color: var(--lavender);
+  background-color: black;
 }
 .chat-page .conversation-name {
   display: block;
@@ -187,4 +187,8 @@ body {
 .message-date {
   opacity: 0.5;
   font-size: 0.8em;
+}
+
+.conversation-item.active {
+    background-color: black;
 }

@@ -9,9 +9,9 @@ def render_chat(request, template_name, context=None, **kwargs):
 
     context = {
         **(context or {}),
-        "room_queryset": Room.objects.filter(roommember__user=user).order_by(
-            "-last_message_at"
-        ),
+        "room_queryset": Room.objects.filter(roommember__user=user)
+        .prefetch_related("roommember_set__user")
+        .order_by("-last_message_at"),
     }
 
     return render(request, template_name, context, **kwargs)
