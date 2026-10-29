@@ -9,7 +9,7 @@
     <button id="chat-message-submit" type="button">Send</button>
   </form>
 
-  {{ room_id|json_script:"room-name" }}
+  {{ room_id|json_script:"room-id" }}
 
   <template id="message-template">
     <li class="message">
@@ -22,13 +22,13 @@
   </template>
 
   <script>
-    const roomName = JSON.parse(document.getElementById('room-name').textContent);
+    const roomId = JSON.parse(document.getElementById('room-id').textContent);
 
     const chatSocket = new WebSocket(
       'ws://'
       + window.location.host
       + '/ws/chat/'
-      + roomName
+      + roomId
       + '/'
     );
 
