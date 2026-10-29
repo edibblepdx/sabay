@@ -3,30 +3,36 @@
 <ul class="conversation-items">
   {% for room in room_queryset %}
     <li class="conversation-item" data-room={{ room.id }}>
+
       <span class="converstion-name">
         <i>{{ room.id|stringformat:"s"|slice:":8" }}</i><br/>
         {% for member in room.roommember_set.all %}
           {{ member.user.username }}{% if not forloop.last %}, {% endif %}
         {% endfor %}
       </span>
+
       <span class="conversation-preview">
         {{ room.last_message_at }}
       </span>
+
     </li>
   {% endfor %}
 </ul>
+
+{{ room_id|json_script:"room-id" }}
+
 <script>
-  const currentRoom = window.location.pathname.split('/')[2];
+  const currentRoom = JSON.parse(document.getElementById('room-id').textContent);
 
   document.querySelectorAll('.conversation-item').forEach((item) => {
-    var roomName = item.dataset.room;
+    var roomId = item.dataset.room;
 
-    if (roomName === currentRoom) {
+    if (roomId === currentRoom) {
       item.classList.add('active');
     }
 
     item.onclick = function(){
-      window.location.pathname = '/chat/' + roomName + '/';
+      window.location.pathname = '/chat/' + roomId + '/';
     };
   });
 </script>
