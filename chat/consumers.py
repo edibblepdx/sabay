@@ -57,6 +57,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 await self.send_message(content)
             case "room.subscribe":
                 await self.subscribe_to_room(content)
+            case "room.unsubscribe":
+                await self.unsubscribe_from_room(content)
             case "ping":
                 await self.send_json({"type": "pong"})
             case _:
@@ -162,9 +164,20 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json(
             content={
                 "type": "chat.history",
+                "room_id": self.room_id,
                 "messages": [ser_message(m) for m in messages],
             }
         )
+
+    # Unsubscribe from room group
+    async def unsubscribe_from_room(self, content):
+        if self.room_group_name:
+            await self.channel_layer.group_discard(
+                self.room_group_name, self.channel_name
+            )
+
+        self.room_id = None
+        self.room_group_name = None
 
     # Get messages history
     async def get_messages_history(self):

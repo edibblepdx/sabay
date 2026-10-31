@@ -1,10 +1,8 @@
-{% load static %}
-
 <ul class="conversation-items">
   {% for room in room_queryset %}
-    <li class="conversation-item" data-room={{ room.id }}>
+    <li class="conversation-item" data-room="{{ room.id }}">
 
-      <span class="converstion-name">
+      <span class="conversation-name">
         <i>{{ room.id|stringformat:"s"|slice:":8" }}</i><br/>
         {% for member in room.roommember_set.all %}
           {{ member.user.username }}{% if not forloop.last %}, {% endif %}
@@ -22,13 +20,15 @@
 <script>
   function toggleActive(roomId) {
     window.currentRoom = roomId;
+
     document.querySelectorAll('.conversation-item').forEach((item) => {
       item.classList.toggle('active', item.dataset.room === roomId);
     });
-    showChat();
+
+    window.showChat();
   }
 
-  window.addEventListener('popstate', (e) => {
+  window.addEventListener('popstate', () => {
     // React to forward and back buttons
     const roomId = window.location.pathname.split('/')[2] || "";
 
@@ -39,17 +39,20 @@
         type: 'room.subscribe',
         room_id: roomId
       }));
+    } else {
+      window.chatSocket.send(JSON.stringify({type: 'room.unsubscribe'}));
     }
   });
 
-  window.chatSocket.addEventListener("message", (e) => {
-    const data = JSON.parse(e.data);
+  window.chatSocket.addEventListener("message", (event) => {
+    const data = JSON.parse(event.data);
+
     if (data.type === 'room.activity') {
       const list = document.querySelector(".conversation-items");
-      const item = list.querySelector(`[data-room="${data.room_id}"]`);
+      const item = list?.querySelector(`[data-room="${data.room_id}"]`);
 
       if (item) {
-          list.prepend(item);
+        list.prepend(item);
       }
     }
   });
@@ -63,11 +66,10 @@
     }
 
     item.onclick = function() {
-      const urlPath = '/chat/' + roomId + '/';
+      window.history.pushState({},"", `/chat/${roomId}/`);
 
       toggleActive(roomId);
 
-      window.history.pushState({},"", urlPath);
       window.chatSocket.send(JSON.stringify({
         type: 'room.subscribe',
         room_id: roomId

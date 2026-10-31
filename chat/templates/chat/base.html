@@ -12,9 +12,11 @@
 {% block content %}
   {{ room_id|default_if_none:""|json_script:"room-id" }}
 
-  {# Create the socket before rendering the body #}
+  {# WebSocket Connection #}
   <script>
-    window.currentRoom = JSON.parse(document.getElementById('room-id').textContent);
+    window.currentRoom = JSON.parse(
+      document.getElementById('room-id').textContent
+    );
 
     window.chatSocket = new WebSocket(
       (window.location.protocol === 'https:' ? 'wss:' : 'ws:')
@@ -32,11 +34,21 @@
       }
     };
 
-    window.chatSocket.onclose = function(e) {
-      console.error('Chat socket closed unexpectedly.');
+    window.chatSocket.onclose = function(event) {
+      clearInterval(window.heartbeat);
+
+      console.error('Chat socket closed unexpectedly.', {
+        code: event.code,
+        reason: event.reason,
+        wasClean: event.wasClean,
+      });
     };
 
-    setInterval(() => {
+    window.chatSocket.onerror = function(event) {
+      console.log("WebSocket error: ", event);
+    }
+
+    window.heartbeat = setInterval(() => {
       // keep-alive
       if (window.chatSocket.readyState === WebSocket.OPEN) {
         window.chatSocket.send(JSON.stringify({

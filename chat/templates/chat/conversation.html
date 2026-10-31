@@ -1,5 +1,3 @@
-{% load static %}
-
 <ol id="chat-log"></ol>
 
 <form id="chat-message-form">
@@ -18,11 +16,9 @@
 </template>
 
 <script>
-  function showChat() {
-    // Show chat container only if a chat is selected
-    //document.getElementById('chat-container').hidden = !window.currentRoom;
+  function clearMessages() {
+    document.querySelector('#chat-log').replaceChildren();
   }
-  showChat();
 
   function appendMessage(m) {
     const template = document.querySelector("#message-template");
@@ -41,16 +37,30 @@
     chatLog.scrollTop = chatLog.scrollHeight;
   }
 
+  window.showChat = function() {
+    // Show chat container only if a chat is selected
+    //document.getElementById('chat-container').hidden = !window.currentRoom;
+    if (!window.currentRoom) {
+      clearMessages();
+    }
+  }
+
   window.chatSocket.addEventListener("message", (e) => {
     const data = JSON.parse(e.data);
-    if (data.type === 'chat.history') {
-      document.querySelector('#chat-log').replaceChildren();
-      for (const message of data.messages) {
-        appendMessage(message)
-      }
-    }
-    if (data.type === 'chat.message') {
-      appendMessage(data.message)
+
+    switch(data.type) {
+      case 'chat.history':
+        if (data.room_id === window.currentRoom) {
+          clearMessages();
+          data.messages.forEach(appendMessage);
+        }
+        break;
+
+      case 'chat.message':
+        if (data.message.room_id === window.currentRoom) {
+          appendMessage(data.message)
+        }
+        break;
     }
   });
 
@@ -64,6 +74,10 @@
   document.querySelector('#chat-message-submit').onclick = function(e) {
     const messageInputDom = document.querySelector('#chat-message-input');
     const message = messageInputDom.value;
+
+    if (!message.trim() || !window.currentRoom) return;
+    if (window.chatSocket.readyState !== WebSocket.OPEN) return;
+
     window.chatSocket.send(JSON.stringify({
       type: 'chat.message',
       message: message
