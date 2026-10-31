@@ -1,11 +1,11 @@
 import json
 
-from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
-from django.utils import timezone
+from channels.generic.websocket import AsyncWebsocketConsumer
 from django.db import transaction
+from django.utils import timezone
 
-from chat.models import Room, Message
+from chat.models import Message, Room
 
 
 def room_activity(func):
