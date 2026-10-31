@@ -57,6 +57,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 await self.send_message(content)
             case "room.subscribe":
                 await self.subscribe_to_room(content)
+            case "ping":
+                await self.send_json({"type": "pong"})
             case _:
                 await self.send_json(
                     {

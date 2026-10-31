@@ -33,8 +33,17 @@
     };
 
     window.chatSocket.onclose = function(e) {
-      console.error('Chat socket closed unexpectedly');
+      console.error('Chat socket closed unexpectedly.');
     };
+
+    setInterval(() => {
+      // keep-alive
+      if (window.chatSocket.readyState === WebSocket.OPEN) {
+        window.chatSocket.send(JSON.stringify({
+          type: 'ping',
+        }));
+      }
+    }, 30000);
   </script>
 
   <main class="chat-page">
