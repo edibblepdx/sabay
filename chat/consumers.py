@@ -1,15 +1,16 @@
 import json
 
 from asgiref.sync import sync_to_async
-from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.db import transaction
 from django.utils import timezone
 
-from chat.models import Message, Room
+from chat.models import Message, Room, RoomMember
 
 
 def room_activity(func):
-    @sync_to_async
+    @database_sync_to_async
     @transaction.atomic
     def wrapper(self, *args, **kwargs):
         now = timezone.now()
@@ -22,53 +23,83 @@ def room_activity(func):
     return wrapper
 
 
-class ChatConsumer(AsyncWebsocketConsumer):
+class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
-        self.room_id = self.scope["url_route"]["kwargs"]["room_id"]
-        self.room_group_name = f"chat_{self.room_id}"
+        self.user_id = self.scope["user"].id
+        self.room_id = None
 
-        # Join room group
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        self.user_group_name = f"user_{self.user_id}"
+        self.room_group_name = None
+
+        # Join user group
+        await self.channel_layer.group_add(self.user_group_name, self.channel_name)
 
         await self.accept()
 
-        # Send message history
-        messages = await self.get_messages()
-        await self.send(
-            text_data=json.dumps(
-                {
-                    "type": "chat.history",
-                    "messages": [ser_message(m) for m in messages],
-                }
-            )
-        )
-
     async def disconnect(self, close_code):
-        # Leave room group
+        # Leave user and room groups
+        await self.channel_layer.group_discard(self.user_group_name, self.channel_name)
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     # Receive message from WebSocket
-    async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = await self.save_message(text_data_json["message"])
-
-        # Send message to room group
-        await self.channel_layer.group_send(
-            self.room_group_name, {"type": "chat.message", "message": message}
-        )
+    async def receive_json(self, content):
+        match content["type"]:
+            case "chat.message":
+                await self.send_message(content)
+            case "room.subscribe":
+                await self.subscribe_to_room(content)
 
     # Receive message from room group
     async def chat_message(self, event):
         message = event["message"]
 
         # Send message to WebSocket
-        await self.send(
-            text_data=json.dumps(
-                {
-                    "type": "chat.message",
-                    "message": ser_message(message),
-                }
+        await self.send_json(
+            content={
+                "type": "chat.message",
+                "message": ser_message(message),
+            }
+        )
+
+    # Send message
+    async def send_message(self, content):
+        message = await self.save_message(content["message"])
+
+        # Send message to room group
+        await self.channel_layer.group_send(
+            self.room_group_name, {"type": "chat.message", "message": message}
+        )
+
+    # Subscribe to room group
+    async def subscribe_to_room(self, content):
+        room_id = content["room_id"]
+
+        # Check membership
+        if not await self.is_room_member(room_id):
+            await self.send_json(
+                {"type": "error", "message": "You are not a member of this room."}
             )
+            return
+
+        # Leave previous room
+        if self.room_group_name:
+            await self.channel_layer.group_discard(
+                self.room_group_name, self.channel_name
+            )
+
+        # Join new room
+        self.room_id = room_id
+        self.room_group_name = f"chat_{self.room_id}"
+
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+
+        # Send message history
+        messages = await self.get_messages()
+        await self.send_json(
+            content={
+                "type": "chat.history",
+                "messages": [ser_message(m) for m in messages],
+            }
         )
 
     # Get messages
@@ -85,11 +116,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message=message, user=self.scope["user"], room=room, created_at=now
         )
 
-    def member_join(self):
-        pass
-
-    def member_leave(self):
-        pass
+    # Return true if user is a member of the room
+    @database_sync_to_async
+    def is_room_member(self, room_id):
+        return RoomMember.objects.filter(user_id=self.user_id, room_id=room_id).exists()
 
 
 # Serialize message

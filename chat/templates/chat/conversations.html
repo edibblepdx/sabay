@@ -19,20 +19,47 @@
   {% endfor %}
 </ul>
 
-{{ room_id|json_script:"room-id" }}
-
 <script>
-  const currentRoom = JSON.parse(document.getElementById('room-id').textContent);
+  function toggleActive(roomId) {
+    window.currentRoom = roomId;
+    document.querySelectorAll('.conversation-item').forEach((item) => {
+      item.classList.toggle('active', item.dataset.room === roomId);
+    });
+    showChat();
+  }
+
+  window.addEventListener('popstate', (e) => {
+    // React to forward and back buttons
+    const roomId = window.location.pathname.split('/')[2] || "";
+
+    toggleActive(roomId);
+
+    if (roomId) {
+      window.chatSocket.send(JSON.stringify({
+        type: 'room.subscribe',
+        room_id: roomId
+      }));
+    }
+  });
 
   document.querySelectorAll('.conversation-item').forEach((item) => {
-    var roomId = item.dataset.room;
+    // Open chat from sidebar
+    const roomId = item.dataset.room;
 
-    if (roomId === currentRoom) {
+    if (roomId === window.currentRoom) {
       item.classList.add('active');
     }
 
-    item.onclick = function(){
-      window.location.pathname = '/chat/' + roomId + '/';
+    item.onclick = function() {
+      const urlPath = '/chat/' + roomId + '/';
+
+      toggleActive(roomId);
+
+      window.history.pushState({},"", urlPath);
+      window.chatSocket.send(JSON.stringify({
+        type: 'room.subscribe',
+        room_id: roomId
+      }));
     };
   });
 </script>

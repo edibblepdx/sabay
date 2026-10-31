@@ -6,6 +6,5 @@ app_name = "chat"
 
 urlpatterns = [
     path("", views.index, name="index"),
-    path("basic", views.basic, name="basic"),
     path("<uuid:room_id>/", views.conversation, name="conversation"),
 ]

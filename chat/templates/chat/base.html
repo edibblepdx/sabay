@@ -10,17 +10,47 @@
 {% endblock %}
 
 {% block content %}
+  {{ room_id|default_if_none:""|json_script:"room-id" }}
+
+  {# Create the socket before rendering the body #}
+  <script>
+    window.currentRoom = JSON.parse(document.getElementById('room-id').textContent);
+
+    window.chatSocket = new WebSocket(
+      (window.location.protocol === 'https:' ? 'wss:' : 'ws:')
+      + '//'
+      + window.location.host
+      + '/ws/chat/'
+    );
+
+    window.chatSocket.onopen = function() {
+      if (window.currentRoom) {
+        window.chatSocket.send(JSON.stringify({
+          type: 'room.subscribe',
+          room_id: window.currentRoom
+        }));
+      }
+    };
+
+    window.chatSocket.onclose = function(e) {
+      console.error('Chat socket closed unexpectedly');
+    };
+  </script>
+
   <main class="chat-page">
     <div class="chat-layout">
 
+      {# List of conversations #}
       <div class="sidebar-left">
         {% include './conversations.html' %}
       </div>
 
+      {# Active conversation #}
       <div class="active-thread">
-        {% block conversation %}{% endblock %}
+        {% include './conversation.html' %}
       </div>
 
+      {# Details right #}
       <div class="sidebar-right">
         {% include './details.html' %}
         {% include './suggestions.html' %}

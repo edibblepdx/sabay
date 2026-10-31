@@ -23,12 +23,7 @@ def index(request):
 
 
 @login_required
-def basic(request):
-    return render_chat(request, "chat/basic.html")
-
-
-@login_required
 def conversation(request, room_id):
     # Check room membership
-    _ = get_object_or_404(RoomMember, user=request.user, room=room_id)
-    return render_chat(request, "chat/conversation.html", {"room_id": room_id})
+    _ = get_object_or_404(RoomMember, user=request.user, room_id=room_id)
+    return render_chat(request, "chat/index.html", {"room_id": room_id})
