@@ -29,11 +29,19 @@
       item.classList.toggle('active', isActive);
 
       if (isActive) {
-        item.classList.remove('unread');
+        window.setUnread(false);
       }
     });
 
     window.showChat();
+  }
+
+  window.setUnread = function(unread) {
+    const item = document.querySelector(
+      `.conversation-item[data-room="${window.currentRoom}"]`
+    );
+
+    item?.classList.toggle('unread', unread);
   }
 
   window.addEventListener('popstate', () => {
@@ -63,7 +71,7 @@
         list.prepend(item);
 
         if (item.dataset.room !== window.currentRoom) {
-          item.classList.add('unread');
+          window.setUnread(true);
         }
       }
     }

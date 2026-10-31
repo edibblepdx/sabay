@@ -64,6 +64,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 await self.subscribe_to_room(content)
             case "room.unsubscribe":
                 await self.unsubscribe_from_room()
+            case "room.read":
+                await self.mark_room_read(self.room_id)
             case "ping":
                 await self.send_json({"type": "pong"})
             case _:
@@ -196,9 +198,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 self.room_group_name, self.channel_name
             )
 
-        if self.room_id:
-            await self.mark_room_read(self.room_id)
-
         self.room_id = None
         self.room_group_name = None
 
@@ -233,16 +232,18 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     # Set read_at field in RoomMember table
     @database_sync_to_async
     def mark_room_read(self, room_id):
-        RoomMember.objects.filter(
-            user_id=self.user_id,
-            room_id=room_id,
-        ).update(read_at=timezone.now())
+        if room_id is not None:
+            RoomMember.objects.filter(
+                user_id=self.user_id,
+                room_id=room_id,
+            ).update(read_at=timezone.now())
 
 
 # Serialize message
 def ser_message(m):
     return {
         "room_id": str(m.room_id),
+        "user_id": str(m.user.id) if m.user else None,
         "message": m.message,
         "username": m.user.username if m.user else None,
         "created_at": m.created_at.isoformat(),

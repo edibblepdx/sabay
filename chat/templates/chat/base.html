@@ -11,12 +11,17 @@
 
 {% block content %}
   {{ room_id|default_if_none:""|json_script:"room-id" }}
+  {{ request.user.id|json_script:"current-user-id" }}
 
   {# WebSocket Connection #}
   <script>
-    window.currentRoom = JSON.parse(
+    window.currentRoom = String(JSON.parse(
       document.getElementById('room-id').textContent
-    );
+    ));
+
+    window.currentUser = String(JSON.parse(
+      document.getElementById('current-user-id').textContent
+    ));
 
     window.chatSocket = new WebSocket(
       (window.location.protocol === 'https:' ? 'wss:' : 'ws:')

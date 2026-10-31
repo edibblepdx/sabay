@@ -72,13 +72,12 @@ body {
   background-color: black;
 }
 
-.chat-page .conversation-item.unread {
-  border-left: 3px solid lightblue;
+.chat-page .conversation-item.active {
+  background-color: black;
 }
 
-.chat-page .conversation-item.active {
-  border-left: 3px solid white;
-  background-color: black;
+.chat-page .conversation-item.unread {
+  border-left: 3px solid lightblue;
 }
 
 .chat-page .conversation-name,

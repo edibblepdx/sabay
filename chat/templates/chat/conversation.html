@@ -61,7 +61,17 @@
     }
 
     chatLog.addEventListener('scroll', () => {
-      scrollButton.hidden = isNearBottom();
+      const nearBottom = isNearBottom();
+      scrollButton.hidden = nearBottom;
+
+      const item = document.querySelector(
+        `.conversation-item[data-room="${window.currentRoom}"]`
+      );
+
+      if (nearBottom && item?.classList.contains('unread')) {
+        window.chatSocket.send(JSON.stringify({type: 'room.read'}));
+        window.setUnread(false);
+      }
     });
 
     scrollButton.addEventListener('click', scrollToBottom);
@@ -89,6 +99,10 @@
       case 'chat.message':
         if (data.message.room_id === window.currentRoom) {
           appendMessage(data.message)
+
+          if (data.message.user_id !== window.currentUser) {
+            window.setUnread(true);
+          }
         }
         break;
     }
