@@ -9,7 +9,7 @@ from django.utils import timezone
 from chat.models import Message, Room, RoomMember
 
 
-def room_activity(func):
+def sync_timestamp_db(func):
     @database_sync_to_async
     @transaction.atomic
     def wrapper(self, *args, **kwargs):
@@ -24,6 +24,7 @@ def room_activity(func):
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
+    # WebSocket Connect
     async def connect(self):
         self.user_id = self.scope["user"].id
         self.room_id = None
@@ -36,10 +37,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         await self.accept()
 
+    # WebSocket disconnect
     async def disconnect(self, close_code):
         # Leave user and room groups
         await self.channel_layer.group_discard(self.user_group_name, self.channel_name)
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        if self.room_group_name:
+            await self.channel_layer.group_discard(
+                self.room_group_name, self.channel_name
+            )
 
     # Receive message from WebSocket
     async def receive_json(self, content):
@@ -49,7 +54,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             case "room.subscribe":
                 await self.subscribe_to_room(content)
 
-    # Receive message from room group
+    # Receive chat message from room group
     async def chat_message(self, event):
         message = event["message"]
 
@@ -61,7 +66,20 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             }
         )
 
-    # Send message
+    # Receive chat message from user group
+    async def room_activity(self, event):
+        message = event["message"]
+
+        # Send message to WebSocket
+        await self.send_json(
+            content={
+                "type": "room.activity",
+                "room_id": str(message.room_id),
+                "last_message": ser_message(message),
+            }
+        )
+
+    # Send message to room group
     async def send_message(self, content):
         message = await self.save_message(content["message"])
 
@@ -69,6 +87,18 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_send(
             self.room_group_name, {"type": "chat.message", "message": message}
         )
+
+        # Notify users of activity
+        user_ids = await database_sync_to_async(list)(
+            RoomMember.objects.filter(room_id=message.room_id).values_list(
+                "user_id", flat=True
+            )
+        )
+
+        for user_id in user_ids:
+            await self.channel_layer.group_send(
+                f"user_{user_id}", {"type": "room.activity", "message": message}
+            )
 
     # Subscribe to room group
     async def subscribe_to_room(self, content):
@@ -102,7 +132,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             }
         )
 
-    # Get messages
+    # Get messages history
     async def get_messages(self):
         room = await Room.objects.aget(pk=self.room_id)
         return [
@@ -110,7 +140,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         ]
 
     # Save message to database
-    @room_activity
+    @sync_timestamp_db
     def save_message(self, message, *, room, now):
         return Message.objects.create(
             message=message, user=self.scope["user"], room=room, created_at=now
@@ -125,6 +155,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 # Serialize message
 def ser_message(m):
     return {
+        "room_id": str(m.room_id),
         "message": m.message,
         "username": m.user.username,
         "created_at": m.created_at.isoformat(),

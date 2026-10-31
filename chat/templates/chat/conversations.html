@@ -42,6 +42,18 @@
     }
   });
 
+  window.chatSocket.addEventListener("message", (e) => {
+    const data = JSON.parse(e.data);
+    if (data.type === 'room.activity') {
+      const list = document.querySelector(".conversation-items");
+      const item = list.querySelector(`[data-room="${data.room_id}"]`);
+
+      if (item) {
+          list.prepend(item);
+      }
+    }
+  });
+
   document.querySelectorAll('.conversation-item').forEach((item) => {
     // Open chat from sidebar
     const roomId = item.dataset.room;
