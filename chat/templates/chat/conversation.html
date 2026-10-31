@@ -1,5 +1,11 @@
 <ol id="chat-log"></ol>
 
+<button
+  id="scroll-to-bottom"
+  type="button"
+  aria-label="Scroll to latest message"
+  > ↓ </button>
+
 <form id="chat-message-form">
   <textarea id="chat-message-input" placeholder="Type message..."></textarea>
   <button id="chat-message-submit" type="button">Send</button>
@@ -34,8 +40,19 @@
 
     const chatLog = document.querySelector('#chat-log');
     chatLog.appendChild(message);
-    chatLog.scrollTop = chatLog.scrollHeight;
   }
+
+  (() => {
+    const chatLog = document.querySelector('#chat-log');
+    const scrollButton = document.querySelector('#scroll-to-bottom');
+
+    function scrollToBottom() {
+      chatLog.scrollTop = chatLog.scrollHeight;
+      scrollButton.hidden = true;
+    }
+
+    scrollButton.addEventListener('click', scrollToBottom);
+  })();
 
   window.showChat = function() {
     // Show chat container only if a chat is selected
