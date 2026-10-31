@@ -25,6 +25,11 @@ def room_message_transaction(func):
 class ChatConsumer(AsyncJsonWebsocketConsumer):
     # WebSocket Connect
     async def connect(self):
+        self.user_id = None
+        self.user_group_name = None
+        self.room_id = None
+        self.room_group_name = None
+
         user = self.scope["user"]
 
         if not user.is_authenticated:
@@ -32,10 +37,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             return
 
         self.user_id = user.id
-        self.room_id = None
-
         self.user_group_name = f"user_{self.user_id}"
-        self.room_group_name = None
 
         await self.channel_layer.group_add(self.user_group_name, self.channel_name)
 
@@ -43,7 +45,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     # WebSocket disconnect
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(self.user_group_name, self.channel_name)
+        if self.user_group_name:
+            await self.channel_layer.group_discard(
+                self.user_group_name, self.channel_name
+            )
 
         if self.room_group_name:
             await self.channel_layer.group_discard(
@@ -58,7 +63,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             case "room.subscribe":
                 await self.subscribe_to_room(content)
             case "room.unsubscribe":
-                await self.unsubscribe_from_room(content)
+                await self.unsubscribe_from_room()
             case "ping":
                 await self.send_json({"type": "pong"})
             case _:
@@ -75,7 +80,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         # Send message to WebSocket
         await self.send_json(
-            content={
+            {
                 "type": "chat.message",
                 "message": message,
             }
@@ -87,9 +92,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         # Send message to WebSocket
         await self.send_json(
-            content={
+            {
                 "type": "room.activity",
-                "room_id": message.room_id,
+                "room_id": message["room_id"],
                 "last_message": message,
             }
         )
@@ -106,6 +111,17 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             return
 
         message = await self.save_message(content["message"])
+
+        if not await self.is_room_member(self.room_id):
+            await self.unsubscribe_from_room()
+            await self.send_json(
+                {
+                    "type": "error",
+                    "message": "You are not a member of this room.",
+                }
+            )
+            return
+
         json_message = ser_message(message)
 
         # Send message to room group
@@ -136,6 +152,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     # Subscribe to room group
     async def subscribe_to_room(self, content):
         room_id = content["room_id"]
+        if not room_id or (str(self.room_id) == str(room_id)):
+            return
 
         # Check membership
         if not await self.is_room_member(room_id):
@@ -143,7 +161,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 {
                     "type": "error",
                     "message": "You are not a member of this room.",
-                },
+                }
             )
             return
 
@@ -162,15 +180,15 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # Send message history
         messages = await self.get_messages_history()
         await self.send_json(
-            content={
+            {
                 "type": "chat.history",
-                "room_id": self.room_id,
+                "room_id": str(self.room_id),
                 "messages": [ser_message(m) for m in messages],
             }
         )
 
     # Unsubscribe from room group
-    async def unsubscribe_from_room(self, content):
+    async def unsubscribe_from_room(self):
         if self.room_group_name:
             await self.channel_layer.group_discard(
                 self.room_group_name, self.channel_name
