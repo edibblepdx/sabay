@@ -9,26 +9,18 @@
   --babypink: #f8d2f9;
 }
 
-/* unset simple css start */
 body {
   display: block;
 }
 
-aside, details, pre, progress {
-  margin-bottom: 0;
-}
-
-aside {
-  width: 100%;
-  padding: 0;
-  margin-inline-start: 0;
-}
-/* unset simple css end */
-
 .chat-page {
-  padding: 90px 20px 20px;
+  padding: 0px 20px 20px;
   margin: 0;
   font-family: system-ui, sans-serif;
+}
+
+#chat-log {
+  list-style: none;
 }
 
 .chat-page .chat-nav {
@@ -67,13 +59,13 @@ aside {
 }
 
 /* details about the bars */
-.chat-page .message-layout {
+.chat-page .chat-layout {
   display: grid;
   grid-template-columns: 220px 1fr 260px;
   gap: 20px;
   height: calc(100vh - 130px);
 }
-.chat-page .conversation-list,
+.chat-page .sidebar-left,
 .chat-page .active-thread,
 .chat-page .profile-detail,
 .chat-page .suggested-profiles {
@@ -110,7 +102,7 @@ aside {
   border-bottom: 1px solid #eee;
 }
 .chat-page .conversation-item:hover {
-  background-color: var(--lavender);
+  background-color: black;
 }
 .chat-page .conversation-name {
   display: block;
@@ -120,4 +112,83 @@ aside {
   display: block;
   font-size: 0.85rem;
   color: #888;
+}
+
+
+
+/********** TEMP FIXES *************/
+.chat-page .profile-detail,
+.chat-page .suggested-profiles {
+  border: 2px solid black;
+  padding: 16px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.chat-page .active-thread {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+#chat-log {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#chat-message-input {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  field-sizing: content;
+  overflow-y: auto;
+  max-height: 160px;
+}
+
+#chat-message-submit {
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+#chat-message-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+  margin-top: 12px;
+}
+
+.message {
+  padding: 8px;
+  border-bottom: 1px solid #888;
+}
+
+.message:last-child {
+  border-bottom: none;
+}
+
+.message-author {
+  font-weight: 600;
+}
+
+.message-content {
+  margin: 4px 0;
+  overflow-wrap: anywhere;
+}
+
+.message-date {
+  opacity: 0.5;
+  font-size: 0.8em;
+}
+
+.conversation-item.active {
+    background-color: black;
 }

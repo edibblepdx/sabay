@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Sabay chat
+{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'chat/mystyle.css' %}" />
+{% endblock %}
+
+{% block content %}
+  <main class="chat-page">
+    <div class="chat-layout">
+
+      <div class="sidebar-left">
+        {% include './conversations.html' %}
+      </div>
+
+      <div class="active-thread">
+        {% block conversation %}{% endblock %}
+      </div>
+
+      <div class="sidebar-right">
+        {% include './details.html' %}
+        {% include './suggestions.html' %}
+      </div>
+
+    </div>
+  </main>
+{% endblock %}
