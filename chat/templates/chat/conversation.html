@@ -4,7 +4,7 @@
   id="scroll-to-bottom"
   type="button"
   aria-label="Scroll to latest message"
-  > ↓ </button>
+> ↓ </button>
 
 <form id="chat-message-form">
   <textarea id="chat-message-input" placeholder="Type message..."></textarea>
@@ -43,6 +43,7 @@
   }
 
   (() => {
+    // Scroll-to-bottom button
     const chatLog = document.querySelector('#chat-log');
     const scrollButton = document.querySelector('#scroll-to-bottom');
 

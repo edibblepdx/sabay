@@ -177,6 +177,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
 
+        await self.mark_room_read(room_id)
+
         # Send message history
         messages = await self.get_messages_history()
         await self.send_json(
@@ -193,6 +195,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             await self.channel_layer.group_discard(
                 self.room_group_name, self.channel_name
             )
+
+        if self.room_id:
+            await self.mark_room_read(self.room_id)
 
         self.room_id = None
         self.room_group_name = None
@@ -224,6 +229,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             user_id=self.user_id,
             room_id=room_id,
         ).exists()
+
+    # Set read_at field in RoomMember table
+    @database_sync_to_async
+    def mark_room_read(self, room_id):
+        RoomMember.objects.filter(
+            user_id=self.user_id,
+            room_id=room_id,
+        ).update(read_at=timezone.now())
 
 
 # Serialize message

@@ -1,6 +1,9 @@
 <ul class="conversation-items">
   {% for room in room_queryset %}
-    <li class="conversation-item" data-room="{{ room.id }}">
+    <li 
+      class="conversation-item{% if room.has_unread %} unread{% endif %}"
+      data-room="{{ room.id }}"
+    >
 
       <span class="conversation-name">
         <i>{{ room.id|stringformat:"s"|slice:":8" }}</i><br/>
@@ -22,7 +25,12 @@
     window.currentRoom = roomId;
 
     document.querySelectorAll('.conversation-item').forEach((item) => {
-      item.classList.toggle('active', item.dataset.room === roomId);
+      isActive = item.dataset.room === roomId;
+      item.classList.toggle('active', isActive);
+
+      if (isActive) {
+        item.classList.remove('unread');
+      }
     });
 
     window.showChat();
@@ -53,6 +61,10 @@
 
       if (item) {
         list.prepend(item);
+
+        if (item.dataset.room !== window.currentRoom) {
+          item.classList.add('unread');
+        }
       }
     }
   });
