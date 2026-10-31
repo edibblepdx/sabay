@@ -37,6 +37,16 @@ body {
   min-height: 0;
 }
 
+@media (max-width: 1000px) {
+  .chat-page .chat-layout {
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+
+  .chat-page .sidebar-right {
+    display: none;
+  }
+}
+
 .chat-page .profile-detail,
 .chat-page .suggested-profiles {
   flex: 1;
