@@ -76,11 +76,9 @@ ASGI_APPLICATION = "sabay.asgi.application"
 
 CHANNEL_LAYERS = {
     "default": {
-        {
-            "BACKEND": "channels.layers.InMemoryChannelLayer",
-            "CONFIG": {},
-        }
-    },
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+        "CONFIG": {},
+    }
 }
 
 # Database

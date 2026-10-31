@@ -19,8 +19,10 @@ SECURE_HSTS_SECONDS = 3600
 # These are deliberate rollout choices; keep all other deploy warnings fatal.
 SILENCED_SYSTEM_CHECKS = ["security.W005", "security.W021"]
 CHANNEL_LAYERS = {
-    "BACKEND": "channels_redis.core.RedisChannelLayer",
-    "CONFIG": {
-        "hosts": [{"address": "redis://127.0.0.1:6379", "socket_timeout": None}],
-    },
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [{"address": "redis://127.0.0.1:6379", "socket_timeout": None}],
+        },
+    }
 }
