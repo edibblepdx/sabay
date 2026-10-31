@@ -46,10 +46,22 @@
     const chatLog = document.querySelector('#chat-log');
     const scrollButton = document.querySelector('#scroll-to-bottom');
 
+    function isNearBottom() {
+      return (
+        chatLog.scrollHeight
+        - chatLog.scrollTop 
+        - chatLog.clientHeight
+      ) < 1000;
+    }
+
     function scrollToBottom() {
       chatLog.scrollTop = chatLog.scrollHeight;
       scrollButton.hidden = true;
     }
+
+    chatLog.addEventListener('scroll', () => {
+      scrollButton.hidden = isNearBottom();
+    });
 
     scrollButton.addEventListener('click', scrollToBottom);
   })();
