@@ -48,6 +48,9 @@ jobs:
           pipenv verify
           pipenv sync --system
 
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v1
+
       - name: Check Django configuration
         run: python manage.py check
 
