@@ -22,6 +22,11 @@
 </template>
 
 <script>
+(() => {
+  // DOM elements
+  const chatLog = document.querySelector('#chat-log');
+  const scrollButton = document.querySelector('#scroll-to-bottom');
+
   function clearMessages() {
     document.querySelector('#chat-log').replaceChildren();
   }
@@ -42,40 +47,34 @@
     chatLog.appendChild(message);
   }
 
-  (() => {
-    // Scroll-to-bottom button
-    const chatLog = document.querySelector('#chat-log');
-    const scrollButton = document.querySelector('#scroll-to-bottom');
+  function isNearBottom() {
+    return (
+      chatLog.scrollHeight
+      - chatLog.scrollTop 
+      - chatLog.clientHeight
+    ) < 1000;
+  }
 
-    function isNearBottom() {
-      return (
-        chatLog.scrollHeight
-        - chatLog.scrollTop 
-        - chatLog.clientHeight
-      ) < 1000;
+  function scrollToBottom() {
+    chatLog.scrollTop = chatLog.scrollHeight;
+    scrollButton.hidden = true;
+  }
+
+  chatLog.addEventListener('scroll', () => {
+    const nearBottom = isNearBottom();
+    scrollButton.hidden = nearBottom;
+
+    const item = document.querySelector(
+      `.conversation-item[data-room="${window.currentRoom}"]`
+    );
+
+    if (nearBottom && item?.classList.contains('unread')) {
+      window.chatSocket.send(JSON.stringify({type: 'room.read'}));
+      window.setUnread(false);
     }
+  });
 
-    function scrollToBottom() {
-      chatLog.scrollTop = chatLog.scrollHeight;
-      scrollButton.hidden = true;
-    }
-
-    chatLog.addEventListener('scroll', () => {
-      const nearBottom = isNearBottom();
-      scrollButton.hidden = nearBottom;
-
-      const item = document.querySelector(
-        `.conversation-item[data-room="${window.currentRoom}"]`
-      );
-
-      if (nearBottom && item?.classList.contains('unread')) {
-        window.chatSocket.send(JSON.stringify({type: 'room.read'}));
-        window.setUnread(false);
-      }
-    });
-
-    scrollButton.addEventListener('click', scrollToBottom);
-  })();
+  scrollButton.addEventListener('click', scrollToBottom);
 
   window.showChat = function() {
     // Show chat container only if a chat is selected
@@ -128,4 +127,5 @@
     }));
     messageInputDom.value = '';
   };
+})();
 </script>
