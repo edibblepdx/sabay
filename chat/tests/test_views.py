@@ -1,46 +1,15 @@
 from datetime import timedelta
 
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from chat.models import Message, Room, RoomMember
+from chat.models import Message, Room
 
-User = get_user_model()
-
-
-class TestCaseMixin:
-    def setUp(self):
-        self.user_prishe = User.objects.create_user(
-            username="prishe",
-            password="password",
-        )
-        self.user_ulmia = User.objects.create_user(
-            username="ulmia",
-            password="password",
-        )
-
-        self.room_shared = Room.objects.create()
-        self.room_prishe = Room.objects.create()
-        self.room_unused = Room.objects.create()
-
-        RoomMember.objects.create(
-            user=self.user_prishe,
-            room=self.room_shared,
-        )
-        RoomMember.objects.create(
-            user=self.user_ulmia,
-            room=self.room_shared,
-        )
-
-        RoomMember.objects.create(
-            user=self.user_prishe,
-            room=self.room_prishe,
-        )
+from .mixins import ChatTestMixin
 
 
-class ChatViewTestCase(TestCaseMixin, TestCase):
+class ChatViewTestCase(ChatTestMixin, TestCase):
     def setUp(self):
         super().setUp()
 
@@ -93,7 +62,7 @@ class ChatViewTestCase(TestCaseMixin, TestCase):
         self.assertEqual(response.status_code, 404)
 
 
-class ChatRenderTestCase(TestCaseMixin, TestCase):
+class ChatRenderTestCase(ChatTestMixin, TestCase):
     def setUp(self):
         super().setUp()
         self.client.force_login(self.user_prishe)
