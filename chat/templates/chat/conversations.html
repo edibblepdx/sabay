@@ -26,20 +26,20 @@
     window.currentRoom = roomId;
 
     document.querySelectorAll('.conversation-item').forEach((item) => {
-      isActive = item.dataset.room === roomId;
+      const isActive = item.dataset.room === roomId;
       item.classList.toggle('active', isActive);
 
       if (isActive) {
-        window.setUnread(false);
+        window.setUnread(roomId, false);
       }
     });
 
     window.showChat();
   }
 
-  window.setUnread = function(unread) {
+  window.setUnread = function(roomId, unread) {
     const item = document.querySelector(
-      `.conversation-item[data-room="${window.currentRoom}"]`
+      `.conversation-item[data-room="${roomId}"]`
     );
 
     item?.classList.toggle('unread', unread);
@@ -72,7 +72,7 @@
         list.prepend(item);
 
         if (item.dataset.room !== window.currentRoom) {
-          window.setUnread(true);
+          window.setUnread(data.room_id, true);
         }
       }
     }

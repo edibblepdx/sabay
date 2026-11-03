@@ -70,7 +70,7 @@
 
     if (nearBottom && item?.classList.contains('unread')) {
       window.chatSocket.send(JSON.stringify({type: 'room.read'}));
-      window.setUnread(false);
+      window.setUnread(window.currentRoom, false);
     }
   });
 
@@ -101,7 +101,7 @@
           appendMessage(data.message)
 
           if (data.message.user_id !== window.currentUser) {
-            window.setUnread(true);
+            window.setUnread(data.message.room_id, true);
           }
         }
         break;
