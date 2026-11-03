@@ -9,7 +9,7 @@ from chat.consumers import ChatConsumer
 from .mixins import ChatTestMixin
 
 
-class ChatConsumerTests(ChatTestMixin, TransactionTestCase):
+class ChatConsumerTestCase(ChatTestMixin, TransactionTestCase):
     def setUp(self):
         super().setUp()
 

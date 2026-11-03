@@ -4,7 +4,7 @@ from django.urls import reverse
 from .mixins import ChatTestMixin
 
 
-class ChatTemplateTests(ChatTestMixin, TestCase):
+class ChatTemplateTestCase(ChatTestMixin, TestCase):
     def setUp(self):
         super().setUp()
         self.client.force_login(self.user_prishe)
