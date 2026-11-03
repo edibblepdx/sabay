@@ -1,8 +1,8 @@
 from django.contrib.auth.decorators import login_required
-from django.db.models import OuterRef, Subquery, Exists
+from django.db.models import Exists, OuterRef, Subquery
 from django.shortcuts import get_object_or_404, render
 
-from chat.models import Room, RoomMember, Message
+from chat.models import Message, Room, RoomMember
 
 
 def render_chat(request, template_name, context=None, **kwargs):
@@ -10,16 +10,16 @@ def render_chat(request, template_name, context=None, **kwargs):
 
     member_read_at = RoomMember.objects.filter(
         room=OuterRef("pk"),
-        user=request.user,
+        user=user,
     ).values("read_at")[:1]
 
     unread_messages = Message.objects.filter(
         room=OuterRef("pk"),
         created_at__gt=OuterRef("member_read_at"),
-    ).exclude(user=request.user)
+    ).exclude(user=user)
 
     room_queryset = (
-        Room.objects.filter(roommember__user=request.user)
+        Room.objects.filter(roommember__user=user)
         .annotate(member_read_at=Subquery(member_read_at))
         .annotate(has_unread=Exists(unread_messages))
     )

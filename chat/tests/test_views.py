@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from chat.models import Room, RoomMember, Message
+from chat.models import Message, Room, RoomMember
 
 User = get_user_model()
 
@@ -103,7 +103,6 @@ class ChatRenderTestCase(TestCaseMixin, TestCase):
     def test_joined_rooms_in_queryset(self):
         """Joined rooms returned in room_queryset"""
         response = self.client.get(reverse("chat:index"))
-        rooms = list(response.context["room_queryset"])
 
         self.assertCountEqual(
             response.context["room_queryset"],
