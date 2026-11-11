@@ -7,7 +7,10 @@
     >
 
       <span class="conversation-name">
+        <!-- Uncomment to include short id in conversation name for test
         <i>{{ room.id|stringformat:"s"|slice:":8" }}</i><br/>
+        -->
+
         {% for member in room.roommember_set.all %}
           {{ member.user.username }}{% if not forloop.last %}, {% endif %}
         {% endfor %}
