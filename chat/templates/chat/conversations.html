@@ -1,6 +1,6 @@
 <ul class="conversation-items">
   {% for room in room_queryset %}
-    <li 
+    <li
       class="conversation-item{% if room.has_unread %} unread{% endif %}"
       data-room="{{ room.id }}"
     >
@@ -22,7 +22,7 @@
 
 <script>
 (() => {
-  function toggleActive(roomId) {
+  function setCurrentRoom(roomId) {
     window.currentRoom = roomId;
 
     document.querySelectorAll('.conversation-item').forEach((item) => {
@@ -49,7 +49,7 @@
     // React to forward and back buttons
     const roomId = window.location.pathname.split('/')[2] || "";
 
-    toggleActive(roomId);
+    setCurrentRoom(roomId);
 
     if (roomId) {
       window.chatSocket.send(JSON.stringify({
@@ -89,7 +89,7 @@
     item.onclick = function() {
       window.history.pushState({},"", `/chat/${roomId}/`);
 
-      toggleActive(roomId);
+      setCurrentRoom(roomId);
 
       window.chatSocket.send(JSON.stringify({
         type: 'room.subscribe',

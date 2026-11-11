@@ -6,10 +6,12 @@
   aria-label="Scroll to latest message"
 > ↓ </button>
 
-<form id="chat-message-form">
-  <textarea id="chat-message-input" placeholder="Type message..."></textarea>
-  <button id="chat-message-submit" type="button">Send</button>
-</form>
+<div id="chat-input" hidden>
+  <form id="chat-message-form">
+    <textarea id="chat-message-input" placeholder="Type message..."></textarea>
+    <button id="chat-message-submit" type="button">Send</button>
+  </form>
+</div>
 
 <template id="message-template">
   <li class="message">
@@ -25,10 +27,11 @@
 (() => {
   // DOM elements
   const chatLog = document.querySelector('#chat-log');
+  const chatInput = document.querySelector('#chat-input');
   const scrollButton = document.querySelector('#scroll-to-bottom');
 
   function clearMessages() {
-    document.querySelector('#chat-log').replaceChildren();
+    chatLog.replaceChildren();
   }
 
   function appendMessage(m) {
@@ -77,12 +80,10 @@
   scrollButton.addEventListener('click', scrollToBottom);
 
   window.showChat = function() {
-    // Show chat container only if a chat is selected
-    //document.getElementById('chat-container').hidden = !window.currentRoom;
-    if (!window.currentRoom) {
-      clearMessages();
-    }
+    chatInput.hidden = !Boolean(window.currentRoom);
+    clearMessages();
   }
+  window.showChat();
 
   window.chatSocket.addEventListener("message", (e) => {
     const data = JSON.parse(e.data);
