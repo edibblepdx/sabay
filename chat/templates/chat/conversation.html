@@ -1,3 +1,4 @@
+<!-- Message history -->
 <ol id="chat-log"></ol>
 
 <button
@@ -6,6 +7,7 @@
   aria-label="Scroll to latest message"
 > ↓ </button>
 
+<!-- Message input -->
 <div id="chat-input" hidden>
   <form id="chat-message-form">
     <textarea id="chat-message-input" placeholder="Type message..."></textarea>
@@ -13,6 +15,7 @@
   </form>
 </div>
 
+<!-- Message template -->
 <template id="message-template">
   <li class="message">
     <div>
@@ -29,14 +32,16 @@
   const chatLog = document.querySelector('#chat-log');
   const chatInput = document.querySelector('#chat-input');
   const scrollButton = document.querySelector('#scroll-to-bottom');
+  const messageTemplate = document.querySelector("#message-template");
+  const messageInput = document.querySelector('#chat-message-input');
+  const messageSubmit = document.querySelector('#chat-message-submit');
 
   function clearMessages() {
     chatLog.replaceChildren();
   }
 
   function appendMessage(m) {
-    const template = document.querySelector("#message-template");
-    const message = template.content.cloneNode(true);
+    const message = messageTemplate.content.cloneNode(true);
 
     message.querySelector(".message-author").textContent = m.username;
     message.querySelector(".message-content").textContent = m.message;
@@ -63,27 +68,10 @@
     scrollButton.hidden = true;
   }
 
-  chatLog.addEventListener('scroll', () => {
-    const nearBottom = isNearBottom();
-    scrollButton.hidden = nearBottom;
-
-    const item = document.querySelector(
-      `.conversation-item[data-room="${window.currentRoom}"]`
-    );
-
-    if (nearBottom && item?.classList.contains('unread')) {
-      window.chatSocket.send(JSON.stringify({type: 'room.read'}));
-      window.setUnread(window.currentRoom, false);
-    }
-  });
-
-  scrollButton.addEventListener('click', scrollToBottom);
-
   window.showChat = function() {
     chatInput.hidden = !Boolean(window.currentRoom);
     clearMessages();
   }
-  window.showChat();
 
   window.chatSocket.addEventListener("message", (e) => {
     const data = JSON.parse(e.data);
@@ -109,16 +97,30 @@
     }
   });
 
-  document.querySelector('#chat-message-input').focus();
-  document.querySelector('#chat-message-input').onkeyup = function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {  // enter, return
-      document.querySelector('#chat-message-submit').click();
-    }
-  };
+  chatLog.addEventListener('scroll', () => {
+    const nearBottom = isNearBottom();
+    scrollButton.hidden = nearBottom;
 
-  document.querySelector('#chat-message-submit').onclick = function(e) {
-    const messageInputDom = document.querySelector('#chat-message-input');
-    const message = messageInputDom.value;
+    const item = document.querySelector(
+      `.conversation-item[data-room="${window.currentRoom}"]`
+    );
+
+    if (nearBottom && item?.classList.contains('unread')) {
+      window.chatSocket.send(JSON.stringify({type: 'room.read'}));
+      window.setUnread(window.currentRoom, false);
+    }
+  });
+
+  scrollButton.addEventListener('click', scrollToBottom);
+
+  messageInput.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {  // enter, return
+      messageSubmit.click();
+    }
+  });
+
+  messageSubmit.addEventListener('click', (e) => {
+    const message = messageInput.value;
 
     if (!message.trim() || !window.currentRoom) return;
     if (window.chatSocket.readyState !== WebSocket.OPEN) return;
@@ -127,7 +129,10 @@
       type: 'chat.message',
       message: message
     }));
-    messageInputDom.value = '';
-  };
+    messageInput.value = '';
+  });
+
+  window.showChat();
+  messageInput.focus();
 })();
 </script>
