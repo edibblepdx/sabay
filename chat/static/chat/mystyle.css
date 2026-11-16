@@ -166,19 +166,26 @@ body {
   border-bottom: none;
 }
 
+.message-header {
+  display: flex;
+  align-items: center;
+  padding: 0px 5px 5px 0px;
+}
+
 .message-author {
   font-weight: 600;
+}
+
+.message-date {
+  font-size: 0.8em;
+  opacity: 0.5;
+  margin-left: auto;
 }
 
 .message-content {
   margin: 4px 0;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-}
-
-.message-date {
-  font-size: 0.8em;
-  opacity: 0.5;
 }
 
 /* Supporting text */
