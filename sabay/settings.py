@@ -136,3 +136,9 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 LOGIN_URL = "members:login"
 REDIRECT_URL_LOGIN = "home"
 REDIRECT_URL_LOGOUT = "home"
+
+# Development email configuration
+# Prints emails to the terminal instead of actually sending them.
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+DEFAULT_FROM_EMAIL = "noreply@sabay.local"
