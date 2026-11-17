@@ -7,8 +7,10 @@ name = "pypi"
 channels = "*"
 channels_redis = "*"
 daphne = "*"
-gunicorn = "*"
 django = "*"
+tzdata = "*"
+pillow = "*"
+gunicorn = "*"
 twisted = "*"
 
 [dev-packages]

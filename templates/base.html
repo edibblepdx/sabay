@@ -11,53 +11,43 @@
     {% block extra_head %}{% endblock %}
   </head>
   <body>
-    <nav>
-      <button
-        class="hamburger-btn"
-        type="button"
-        aria-controls="nav-menu"
-        aria-expanded="false"
-        aria-label="Toggle menu"
-      >
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-      </button>
+	    <nav>
+		    <a class="brand" href="{% url 'home' %}">Sabay</a>
+		    <button class="hamburger-btn" type="button" aria-controls="nav-menu" aria-expanded="false" aria-label="Toggle menu">
+			    <span class="bar"></span>
+			    <span class="bar"></span>
+			    <span class="bar"></span>
+		    </button>
+		    <ul id="nav-menu" >
+			    <!--<li><a href="{% url 'home' %}"> Home </a></li> -->
 
-      <ul id="nav-menu">
-        <li><a href="{% url 'home' %}">Home</a></li>
-        <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
-        <li><a href="{% url 'chat:index' %}">Chat</a></li>
-
-        <!-- Checks to see if user is authenticated -->
-        {% if user.is_authenticated %}
-        <li>
-          <form
-            action="{% url 'members:logout' %}"
-            method="post"
-            class="logout-form"
-          >
-            {% csrf_token %}
-            <button id="btn" type="submit">Logout</button>
-          </form>
-        </li>
-        {% else %}
-        <li><a href="{% url 'members:login' %}">Login</a></li>
-        <li><a href="{% url 'members:signup' %}">Sign Up</a></li>
-        {% endif %}
-      </ul>
-    </nav>
-
+			    <li><a href="{% url 'dashboard' %}">Dashboard </a></li>
+			    {% if user.provider_profile %}
+			    	<li><a href="{% url 'booking:job_list' %}">Job board</a></li>
+				{% elif user.seeker_profile %}
+					<li><a href="{% url 'booking:my_jobs' %}">My jobs</a></li>
+			    {% endif %}
+			    <li><a href="{% url 'chat:index' %}">Chat </a></li>
+			    <!-- Checks to see if user is authenticated -->
+			    {% if user.is_authenticated %}
+			    	<form action="{% url 'members:logout' %}" method="post" class="logout-form">
+        			{% csrf_token %}
+				<li><button id="btn" type="submit">Logout</button></li>
+   			 	</form>
+			    {% else %}
+			    	<li><a href="{% url 'members:login' %}">Login</a></li>
+				<li><a href="{% url 'members:signup' %}">Sign Up</a></li>
+			    {% endif %}
+		    </ul>
+	    </nav>
     {% block header %}
     <!-- <h1>{% block page_heading %}Sabay{% endblock %}</h1> -->
     {% endblock %}
 
     <main>{% block content %}{% endblock %}</main>
 
-    <footer>
-      {% block footer %}
-      <p>&copy; {% now "Y" %} Sabay</p>
-      {% endblock %}
+    <footer class="width-issue">
+      {% block footer %}<p>&copy; {% now "Y" %} Sabay</p>{% endblock %}
     </footer>
 
     {% block scripts %}{% endblock %}

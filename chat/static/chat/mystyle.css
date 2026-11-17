@@ -1,16 +1,25 @@
-/* Page */
+:root {
+  /* Sabay terracotta palette (see static/css/custom.css) */
+  --chat-surface: #ffffff;
+  --chat-hover: var(--blush, #f8ebe2);
+  --chat-border: var(--sand, #ecdcd0);
+}
+
 body {
   display: block;
 }
 
 .chat-page {
+  width: 100%;
   margin: 0;
   padding: 0 20px 20px;
-  font-family: system-ui, sans-serif;
+  font-family: var(--serif-font);
+  color: var(--text-light);
 }
 
 /* Main layout */
 .chat-page .chat-layout {
+  width: 100%;
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr) 260px;
   grid-template-rows: minmax(0, 1fr);
@@ -27,7 +36,9 @@ body {
   min-width: 0;
   box-sizing: border-box;
   padding: 16px;
-  border: 2px solid black;
+  border: 2px solid var(--chat-border);
+  border-radius: 16px;
+  background-color: var(--chat-surface);
 }
 
 .chat-page .sidebar-right {
@@ -64,20 +75,21 @@ body {
 .chat-page .conversation-item {
   display: block;
   padding: 10px 8px;
-  border-bottom: 1px solid;
   cursor: pointer;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgb(143 74 48 / 0.06);
 }
 
 .chat-page .conversation-item:hover {
-  background-color: black;
+  background-color: var(--chat-hover);
 }
 
 .chat-page .conversation-item.active {
-  background-color: black;
+  background-color: var(--chat-hover);
 }
 
 .chat-page .conversation-item.unread {
-  border-left: 3px solid #dc6262;
+  border-left: 3px solid var(--accent);
 }
 
 .chat-page .conversation-name,
@@ -150,16 +162,21 @@ body {
   box-sizing: border-box;
   field-sizing: content;
   overflow-y: auto;
+  border: 2px solid var(--chat-border);
+  background: var(--chat-surface);
+  color: var(--text-light);
 }
 
 #chat-message-submit {
   flex-shrink: 0;
+  background: var(--accent);
 }
 
 /* Messages */
 .message {
   padding: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgb(143 74 48 / 0.06);
 }
 
 .message:last-child {
@@ -193,7 +210,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: #dc6262;
+  color: var(--accent);
   font-size: 0.8rem;
   font-weight: bold;
   margin: 1rem 0;

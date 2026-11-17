@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Dashboard | Sabay{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'providers/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+	<div class="greeting">
+		<h1><span id="greeting">Hello</span>, {{ seeker.user.first_name|default:seeker.user.username }}</h1>
+		<div class="post-job-container">
+			<p>
+				<a class="button" href="{% url 'booking:post_job' %}">Post a job</a>
+			</p>
+		</div>
+	</div>
+	<div class="dash-main-container">
+		<div class="job-section-container">
+			<div class="job-container">
+				<div class="job-header">
+					<h2>My job posts</h2>
+					<a href="{% url 'booking:my_jobs' %}">Manage posts</a>
+				</div>
+				<div class="job-cards">
+					{% for req in pending_reqs %}
+					<div class="job-card">
+						<div class="ls-card">
+							<div class="img-container">
+								{% if req.provider.profilePicture %}
+									<img src="{{ req.provider.profilePicture.url }}" alt="provider profile picture">
+								{% else %}
+								<span class="profile-initials" aria-hidden="true">{% if req.provider.user.first_name %}{{ req.provider.user.first_name|first|upper }}{{ req.provider.user.last_name|first|upper }}{% else %}{{ req.provider.user.username|first|upper }}{% endif %}</span>
+								{% endif %}
+							</div>
+							<div class="job-info">
+								<span>{{ req.job.task_type }}</span>
+								<p>{{ req.job.schedule_start|date:"D, M j" }} &middot; {{ req.job.schedule_start|time:"g:i A" }}</p>
+								<p>{{ req.provider.user.get_full_name|default:req.provider.user.username }} wants this job</p>
+							</div>
+						</div>
+						<div class="options">
+							<span class="job-req-status pending">Waiting on you</span>
+							<form method="post" action="{% url 'booking:decline' req.pk %}">
+								{% csrf_token %}
+								<button type="submit" class="cancel-btn">Decline</button>
+							</form>
+							<form method="post" action="{% url 'booking:confirm' req.pk %}">
+								{% csrf_token %}
+								<button type="submit">Accept</button>
+							</form>
+						</div>
+					</div>
+					{% endfor %}
+					{% for job in open_jobs %}
+					<div class="job-card">
+						<div class="ls-card">
+							<div class="job-info">
+								<span>{{ job.task_type }}</span>
+								<p>{{ job.schedule_start|date:"D, M j" }} &middot; {{ job.schedule_start|time:"g:i A" }}</p>
+								<p>No requests yet</p>
+							</div>
+						</div>
+						<div class="options">
+							<span class="job-req-status declined">Open</span>
+							<form method="post" action="{% url 'booking:cancel_job' job.pk %}"
+								onsubmit="return confirm('Cancel this job?');">
+								{% csrf_token %}
+								<button type="submit" class="cancel-btn">Cancel</button>
+							</form>
+							<a class="button" href="{% url 'booking:edit_job' job.pk %}">Edit</a>
+							<a class="button" href="{% url 'booking:my_jobs' %}?job={{ job.pk }}#job-detail">Details</a>
+						</div>
+					</div>
+					{% endfor %}
+					{% if not pending_reqs and not open_jobs %}
+					<p>Nothing waiting. <a href="{% url 'booking:post_job' %}">Post a job</a>.</p>
+					{% endif %}
+				</div>
+			</div>
+
+			<div class="job-container">
+				<div class="job-header">
+					<h2>Upcoming visits</h2>
+				</div>
+				<div class="job-cards">
+					{% for job in upcoming_jobs %}
+					<div class="job-card">
+						<div class="ls-card">
+							<div class="job-info">
+								<span>{{ job.task_type }}</span>
+								<p>{{ job.schedule_start|date:"D, M j" }} &middot; {{ job.schedule_start|time:"g:i A" }} to {{ job.schedule_end|time:"g:i A" }}</p>
+							</div>
+						</div>
+						<div class="options">
+							<form method="post" action="{% url 'booking:cancel_job' job.pk %}"
+								onsubmit="return confirm('Cancel this job?');">
+								{% csrf_token %}
+								<button type="submit" class="cancel-btn">Cancel</button>
+							</form>
+							<a class="button" href="{% url 'booking:my_jobs' %}?job={{ job.pk }}#job-detail">Details</a>
+						</div>
+					</div>
+					{% empty %}
+					<p>No upcoming visits yet.</p>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+
+		<div class="side-info-container">
+			<div class="profile-container">
+				<div class="profile-info">
+					<div class="profile-card-img-container">
+						{% if seeker.photo %}
+						<img src="{{ seeker.photo.url }}" alt="Profile photo">
+						{% else %}
+						<span class="profile-initials" aria-hidden="true">{% if seeker.user.first_name %}{{ seeker.user.first_name|first|upper }}{{ seeker.user.last_name|first|upper }}{% else %}{{ seeker.user.username|first|upper }}{% endif %}</span>
+						{% endif %}
+					</div>
+					<div class="profile-card-info">
+						<span>{{ seeker.user.get_full_name|default:seeker.user.username }}</span>
+						<p>{{ seeker.location|default:"Location not set" }}</p>
+					</div>
+				</div>
+				<a href="{% url 'members:seeker_profile_edit' %}"><button type="button" class="edit-profile">Edit profile</button></a>
+			</div>
+
+			<div class="profile-container">
+				<div class="profile-section">
+					<h3>Messages</h3>
+					<p class="profile-empty">Your conversations with providers.</p>
+				</div>
+				<a href="{% url 'chat:index' %}"><button type="button" class="edit-profile">Inbox</button></a>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'general/js/members.js' %}"></script>
+{% endblock %}
