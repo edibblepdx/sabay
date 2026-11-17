@@ -1,4 +1,3 @@
-
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
@@ -24,6 +23,7 @@ Decided to use a custom login view
 - makes sure the request method is post before authenticating
 - checks to make sure user exists before calling auth
 """
+
 
 def login(request):
     error = None
@@ -78,9 +78,7 @@ def invite_signup(request, token):
         else:
             with transaction.atomic():
                 # Assign the role selected by the admin.
-                group, _ = Group.objects.get_or_create(
-                    name=invite.get_role_display()
-                )
+                group, _ = Group.objects.get_or_create(name=invite.get_role_display())
 
                 user = User.objects.create_user(
                     username=username,

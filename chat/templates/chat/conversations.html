@@ -1,0 +1,105 @@
+<!-- Conversations -->
+<ul class="conversation-items">
+  {% for room in room_queryset %}
+    <li
+      class="conversation-item{% if room.has_unread %} unread{% endif %}"
+      data-room="{{ room.id }}"
+    >
+
+      <span class="conversation-name">
+        <!-- Uncomment to include short id in conversation name for test
+        <i>{{ room.id|stringformat:"s"|slice:":8" }}</i><br/>
+        -->
+
+        {% for member in room.roommember_set.all %}
+          {{ member.user.username }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+      </span>
+
+      <span class="conversation-preview">
+        {{ room.last_message_at }}
+      </span>
+
+    </li>
+  {% endfor %}
+</ul>
+
+<script>
+(() => {
+  function setCurrentRoom(roomId) {
+    window.currentRoom = roomId;
+
+    document.querySelectorAll('.conversation-item').forEach((item) => {
+      const isActive = item.dataset.room === roomId;
+      item.classList.toggle('active', isActive);
+
+      if (isActive) {
+        window.setUnread(roomId, false);
+      }
+    });
+
+    window.showChat();
+  }
+
+  window.setUnread = function(roomId, unread) {
+    const item = document.querySelector(
+      `.conversation-item[data-room="${roomId}"]`
+    );
+
+    item?.classList.toggle('unread', unread);
+  }
+
+  window.addEventListener('popstate', () => {
+    // React to forward and back buttons
+    const roomId = window.location.pathname.split('/')[2] || "";
+
+    setCurrentRoom(roomId);
+
+    if (roomId) {
+      window.chatSocket.send(JSON.stringify({
+        type: 'room.subscribe',
+        room_id: roomId
+      }));
+    } else {
+      window.chatSocket.send(JSON.stringify({type: 'room.unsubscribe'}));
+    }
+  });
+
+  window.chatSocket.addEventListener("message", (event) => {
+    const data = JSON.parse(event.data);
+
+    if (data.type === 'room.activity') {
+      const list = document.querySelector(".conversation-items");
+      const item = list?.querySelector(`[data-room="${data.room_id}"]`);
+
+      if (item) {
+        list.prepend(item);
+
+        if (item.dataset.room !== window.currentRoom) {
+          window.setUnread(data.room_id, true);
+        }
+      }
+    }
+  });
+
+  document.querySelectorAll('.conversation-item').forEach((item) => {
+    // Open chat from sidebar
+    const roomId = item.dataset.room;
+
+    if (roomId === window.currentRoom) {
+      item.classList.add('active');
+    }
+
+    item.onclick = function() {
+      window.history.pushState({},"", `/chat/${roomId}/`);
+
+      setCurrentRoom(roomId);
+
+      window.chatSocket.send(JSON.stringify({
+        type: 'room.subscribe',
+        room_id: roomId
+      }));
+    };
+  });
+})();
+</script>

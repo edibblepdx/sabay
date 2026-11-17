@@ -119,6 +119,7 @@ class ProviderCert(models.Model):
     def __str__(self):
         return f"{self.cert} - {self.provider.user}"
 
+
 def generate_invite_token():
     return secrets.token_urlsafe(32)
 

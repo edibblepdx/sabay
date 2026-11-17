@@ -1,0 +1,175 @@
+<!-- Message history -->
+<ol id="chat-log"></ol>
+
+<button
+  id="scroll-to-bottom"
+  type="button"
+  aria-label="Scroll to latest message"
+> ↓ </button>
+
+<!-- Message input -->
+<div id="chat-input" hidden>
+  <form id="chat-message-form">
+    <textarea id="chat-message-input" placeholder="Type message..."></textarea>
+    <button id="chat-message-submit" type="button">Send</button>
+  </form>
+</div>
+
+<!-- Message template -->
+<template id="message-template">
+  <li class="message">
+    <div>
+      <div class="message-header">
+        <span class="message-author"></span>
+        <time class="message-date"></time>
+      </div>
+      <p class="message-content"></p>
+    </div>
+  </li>
+</template>
+
+<!-- Unread divider template -->
+<template id="unread-divider-template">
+  <li class="unread-divider">
+    UNREAD MESSAGES
+  </li>
+</template>
+
+<script>
+(() => {
+  // DOM elements
+  const chatLog = document.querySelector('#chat-log');
+  const chatInput = document.querySelector('#chat-input');
+  const scrollButton = document.querySelector('#scroll-to-bottom');
+  const messageTemplate = document.querySelector("#message-template");
+  const messageInput = document.querySelector('#chat-message-input');
+  const messageSubmit = document.querySelector('#chat-message-submit');
+  const unreadDividerTemplate = document.querySelector('#unread-divider-template');
+
+  function clearMessages() {
+    chatLog.replaceChildren();
+  }
+
+  function appendMessage(m) {
+    const message = messageTemplate.content.cloneNode(true);
+    const element = message.querySelector('.message');
+
+    message.querySelector(".message-author").textContent = m.username;
+    message.querySelector(".message-content").textContent = m.message;
+
+    const time = message.querySelector(".message-date");
+    time.dateTime = message.created_at;
+    time.textContent = new Date(m.created_at)
+      .toLocaleTimeString([], {hour: 'numeric', minute:'numeric'});
+
+    chatLog.appendChild(message);
+
+    return element;
+  }
+
+  function insertUnreadDivider(message) {
+    const divider = unreadDividerTemplate.content.cloneNode(true);
+    message.before(divider);
+  }
+
+  function isNearBottom() {
+    return (
+      chatLog.scrollHeight
+      - chatLog.scrollTop 
+      - chatLog.clientHeight
+    ) < 1000;
+  }
+
+  function scrollToBottom() {
+    chatLog.scrollTop = chatLog.scrollHeight;
+    scrollButton.hidden = true;
+  }
+
+  window.showChat = function() {
+    chatInput.hidden = !Boolean(window.currentRoom);
+    clearMessages();
+  }
+
+  window.chatSocket.addEventListener("message", (e) => {
+    const data = JSON.parse(e.data);
+
+    switch(data.type) {
+      case 'chat.history':
+        if (data.room_id === window.currentRoom) {
+          clearMessages();
+
+          const readAt = data.read_at ? new Date(data.read_at) : null;
+          let dividerInserted = false;
+
+          data.messages.forEach((message) => {
+            const messageElement = appendMessage(message);
+
+            if (
+              !dividerInserted && readAt &&
+              message.user_id !== window.currentUser &&
+              new Date(message.created_at) > readAt
+            ) {
+              insertUnreadDivider(messageElement);
+              dividerInserted = true;
+            }
+          });
+
+          scrollToBottom();
+        }
+        break;
+
+      case 'chat.message':
+        if (data.message.room_id === window.currentRoom) {
+          appendMessage(data.message);
+
+          if (data.message.user_id !== window.currentUser) {
+            window.setUnread(data.message.room_id, true);
+          }
+
+          if (isNearBottom()) {
+            scrollToBottom();
+          }
+        }
+        break;
+    }
+  });
+
+  chatLog.addEventListener('scroll', () => {
+    const nearBottom = isNearBottom();
+    scrollButton.hidden = nearBottom;
+
+    const item = document.querySelector(
+      `.conversation-item[data-room="${window.currentRoom}"]`
+    );
+
+    if (nearBottom && item?.classList.contains('unread')) {
+      window.chatSocket.send(JSON.stringify({type: 'room.read'}));
+      window.setUnread(window.currentRoom, false);
+    }
+  });
+
+  scrollButton.addEventListener('click', scrollToBottom);
+
+  messageInput.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {  // enter, return
+      messageSubmit.click();
+    }
+  });
+
+  messageSubmit.addEventListener('click', () => {
+    const message = messageInput.value;
+
+    if (!message.trim() || !window.currentRoom) return;
+    if (window.chatSocket.readyState !== WebSocket.OPEN) return;
+
+    window.chatSocket.send(JSON.stringify({
+      type: 'chat.message',
+      message: message
+    }));
+    messageInput.value = '';
+  });
+
+  window.showChat();
+  messageInput.focus();
+})();
+</script>

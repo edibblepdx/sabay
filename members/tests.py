@@ -339,7 +339,9 @@ class LoginViewTests(TestCase):
         response = self.client.post(
             self.url, {"username": "sue", "password": "password"}
         )
-        self.assertRedirects(response, reverse("members:seeker_dashboard"), fetch_redirect_response=False)
+        self.assertRedirects(
+            response, reverse("members:seeker_dashboard"), fetch_redirect_response=False
+        )
 
 
 class SignupTests(TestCase):
@@ -364,9 +366,7 @@ class SignupTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(
-            User.objects.filter(username="testuser").exists()
-        )
+        self.assertFalse(User.objects.filter(username="testuser").exists())
 
 
 class UserInviteTests(TestCase):
@@ -424,12 +424,8 @@ class UserInviteTests(TestCase):
 
         user = User.objects.get(username="caretaker1")
 
-        self.assertTrue(
-            user.groups.filter(name="Caretaker").exists()
-        )
-        self.assertFalse(
-            user.groups.filter(name="Careseeker").exists()
-        )
+        self.assertTrue(user.groups.filter(name="Caretaker").exists())
+        self.assertFalse(user.groups.filter(name="Careseeker").exists())
 
     def test_careseeker_signup_assigns_careseeker_group(self):
         self.invite.role = UserInvite.Role.CARESEEKER
@@ -439,12 +435,8 @@ class UserInviteTests(TestCase):
 
         user = User.objects.get(username="careseeker1")
 
-        self.assertTrue(
-            user.groups.filter(name="Careseeker").exists()
-        )
-        self.assertFalse(
-            user.groups.filter(name="Caretaker").exists()
-        )
+        self.assertTrue(user.groups.filter(name="Careseeker").exists())
+        self.assertFalse(user.groups.filter(name="Caretaker").exists())
         self.assertRedirects(response, reverse("members:login"))
 
     def test_signup_marks_invite_used(self):
@@ -468,16 +460,11 @@ class UserInviteTests(TestCase):
         response = self.signup_with_invite("seconduser")
 
         self.assertContains(response, "Invalid Invitation")
-        self.assertFalse(
-            User.objects.filter(username="seconduser").exists()
-        )
+        self.assertFalse(User.objects.filter(username="seconduser").exists())
 
 
-@override_settings(
-    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend"
-)
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
 class UserInviteAdminTests(TestCase):
-
     def setUp(self):
         self.admin = User.objects.create_superuser(
             username="adminuser",
@@ -551,9 +538,7 @@ class UserInviteAdminTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
 
-        invite = UserInvite.objects.get(
-            email="newcaretaker@example.com"
-        )
+        invite = UserInvite.objects.get(email="newcaretaker@example.com")
 
         self.assertEqual(invite.role, UserInvite.Role.CARETAKER)
         self.assertFalse(invite.used)
@@ -583,9 +568,7 @@ class UserInviteAdminTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
 
-        invite = UserInvite.objects.get(
-            email="newcareseeker@example.com"
-        )
+        invite = UserInvite.objects.get(email="newcareseeker@example.com")
 
         self.assertEqual(invite.role, UserInvite.Role.CARESEEKER)
         self.assertEqual(len(mail.outbox), 1)

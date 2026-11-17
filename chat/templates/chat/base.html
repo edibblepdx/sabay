@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  Sabay chat
+{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'chat/mystyle.css' %}" />
+{% endblock %}
+
+{% block content %}
+  {{ room_id|default_if_none:""|json_script:"room-id" }}
+  {{ request.user.id|json_script:"current-user-id" }}
+
+  {# WebSocket Connection #}
+  <script>
+    window.currentRoom = String(JSON.parse(
+      document.getElementById('room-id').textContent
+    ));
+
+    window.currentUser = String(JSON.parse(
+      document.getElementById('current-user-id').textContent
+    ));
+
+    window.chatSocket = new WebSocket(
+      (window.location.protocol === 'https:' ? 'wss:' : 'ws:')
+      + '//'
+      + window.location.host
+      + '/ws/chat/'
+    );
+
+    window.chatSocket.onopen = function() {
+      if (window.currentRoom) {
+        window.chatSocket.send(JSON.stringify({
+          type: 'room.subscribe',
+          room_id: window.currentRoom
+        }));
+      }
+    };
+
+    window.chatSocket.onclose = function(event) {
+      clearInterval(window.heartbeat);
+
+      console.error('Chat socket closed unexpectedly.', {
+        code: event.code,
+        reason: event.reason,
+        wasClean: event.wasClean,
+      });
+    };
+
+    window.chatSocket.onerror = function(event) {
+      console.log("WebSocket error: ", event);
+    }
+
+    window.heartbeat = setInterval(() => {
+      // keep-alive
+      if (window.chatSocket.readyState === WebSocket.OPEN) {
+        window.chatSocket.send(JSON.stringify({
+          type: 'ping',
+        }));
+      }
+    }, 30000);
+  </script>
+
+  <main class="chat-page">
+    <div class="chat-layout">
+
+      {# List of conversations #}
+      <div class="sidebar-left" aria-label="Conversations">
+        {% include './conversations.html' %}
+      </div>
+
+      {# Active conversation #}
+      <div class="active-thread">
+        {% include './conversation.html' %}
+      </div>
+
+      {# Details right #}
+      <div class="sidebar-right">
+        {% include './details.html' %}
+        {% include './suggestions.html' %}
+      </div>
+
+    </div>
+  </main>
+{% endblock %}
