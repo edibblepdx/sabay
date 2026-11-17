@@ -28,6 +28,13 @@
   </li>
 </template>
 
+<!-- Unread divider template -->
+<template id="unread-divider-template">
+  <li class="unread-divider">
+    UNREAD MESSAGES
+  </li>
+</template>
+
 <script>
 (() => {
   // DOM elements
@@ -37,6 +44,7 @@
   const messageTemplate = document.querySelector("#message-template");
   const messageInput = document.querySelector('#chat-message-input');
   const messageSubmit = document.querySelector('#chat-message-submit');
+  const unreadDividerTemplate = document.querySelector('#unread-divider-template');
 
   function clearMessages() {
     chatLog.replaceChildren();
@@ -44,6 +52,7 @@
 
   function appendMessage(m) {
     const message = messageTemplate.content.cloneNode(true);
+    const element = message.querySelector('.message');
 
     message.querySelector(".message-author").textContent = m.username;
     message.querySelector(".message-content").textContent = m.message;
@@ -53,8 +62,14 @@
     time.textContent = new Date(m.created_at)
       .toLocaleTimeString([], {hour: 'numeric', minute:'numeric'});
 
-    const chatLog = document.querySelector('#chat-log');
     chatLog.appendChild(message);
+
+    return element;
+  }
+
+  function insertUnreadDivider(message) {
+    const divider = unreadDividerTemplate.content.cloneNode(true);
+    message.before(divider);
   }
 
   function isNearBottom() {
@@ -82,17 +97,37 @@
       case 'chat.history':
         if (data.room_id === window.currentRoom) {
           clearMessages();
-          data.messages.forEach(appendMessage);
+
+          const readAt = data.read_at ? new Date(data.read_at) : null;
+          let dividerInserted = false;
+
+          data.messages.forEach((message) => {
+            const messageElement = appendMessage(message);
+
+            if (
+              !dividerInserted && readAt &&
+              message.user_id !== window.currentUser &&
+              new Date(message.created_at) > readAt
+            ) {
+              insertUnreadDivider(messageElement);
+              dividerInserted = true;
+            }
+          });
+
           scrollToBottom();
         }
         break;
 
       case 'chat.message':
         if (data.message.room_id === window.currentRoom) {
-          appendMessage(data.message)
+          appendMessage(data.message);
 
           if (data.message.user_id !== window.currentUser) {
             window.setUnread(data.message.room_id, true);
+          }
+
+          if (isNearBottom()) {
+            scrollToBottom();
           }
         }
         break;
@@ -121,7 +156,7 @@
     }
   });
 
-  messageSubmit.addEventListener('click', (e) => {
+  messageSubmit.addEventListener('click', () => {
     const message = messageInput.value;
 
     if (!message.trim() || !window.currentRoom) return;

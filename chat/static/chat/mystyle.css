@@ -77,7 +77,7 @@ body {
 }
 
 .chat-page .conversation-item.unread {
-  border-left: 3px solid lightblue;
+  border-left: 3px solid #dc6262;
 }
 
 .chat-page .conversation-name,
@@ -159,7 +159,7 @@ body {
 /* Messages */
 .message {
   padding: 8px;
-  border-bottom: 1px solid;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .message:last-child {
@@ -186,6 +186,25 @@ body {
   margin: 4px 0;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+/* Unread divisor */
+.unread-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #dc6262;
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin: 1rem 0;
+}
+
+.unread-divider::before,
+.unread-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: currentColor;
 }
 
 /* Supporting text */

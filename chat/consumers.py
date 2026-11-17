@@ -177,17 +177,21 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
 
-        await self.mark_room_read(room_id)
-
         # Send message history
         messages = await self.get_messages_history()
+        read_at = await self.get_read_at()
+
         await self.send_json(
             {
                 "type": "chat.history",
                 "room_id": str(self.room_id),
                 "messages": [ser_message(m) for m in messages],
+                "read_at": read_at.isoformat() if read_at else None,
             }
         )
+
+        # Mark room read
+        await self.mark_room_read(room_id)
 
     # Unsubscribe from room group
     async def unsubscribe_from_room(self):
@@ -208,6 +212,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 room.message_set.select_related("user").order_by("created_at", "id")
             )
         ]
+
+    # Get read date
+    async def get_read_at(self):
+        member = await RoomMember.objects.aget(
+            user_id=self.user_id,
+            room_id=self.room_id,
+        )
+        return member.read_at
 
     # Save message to database
     @room_message_transaction
