@@ -7,8 +7,9 @@ name = "pypi"
 channels = "*"
 channels_redis = "*"
 daphne = "*"
-django = "*"
 gunicorn = "*"
+django = "*"
+twisted = "*"
 
 [dev-packages]
 ruff = "*"

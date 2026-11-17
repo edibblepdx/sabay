@@ -24,4 +24,10 @@ app_name = "members"
 urlpatterns = [
     path("login/", views.login, name="login"),
     path("logout/", views.logout, name="logout"),
+    path("signup/", views.signup, name="signup"),
+    path(
+        "signup/invite/<str:token>/",
+        views.invite_signup,
+        name="invite_signup",
+    ),
 ]
