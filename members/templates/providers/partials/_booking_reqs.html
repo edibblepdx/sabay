@@ -1,0 +1,36 @@
+{% load static %}
+
+{% partialdef booking-req %}
+<div class="bookings-container">
+	{% for job in booking_requests %}
+	<div class="job-card">
+		<div class="ls-card">
+			<div class="img-container">
+				{% if job.seeker.photo %}
+					<img src=" {{ job.seeker.photo.url }}" alt="seeker profile picture">
+{% else %}
+					<span class="small-profile-initials" aria-hidden="true">{% if job.seeker.user.first_name %}{{ job.seeker.user.first_name|first|upper }}{{ job.seeker.user.last_name|first|upper }}{% else %}{{ job.seeker.user.username|first|upper }}{% endif %}</span>
+				{% endif %}
+
+			</div>
+			<div class="job-info">
+				<span>{{ job.seeker.user.get_full_name }}</span>
+				<p>{{ job.task_type }}</p>
+				<p>{{job.city}}, {{job.state}}</p>
+			</div>
+		</div>
+		<div class="options">
+
+			<a class="button" href="{% url 'booking:job_list' %}?job={{ job.pk }}#job-detail">Details</a>
+			<form method="post" action="{% url 'members:job_response' job.id %}">
+				{% csrf_token %}
+				<button type="submit" name="action" value="accept"> Accept </button>
+				<button type="submit" name="action" value="decline"> Decline </button>
+			</form>
+		</div>
+	</div>
+	{% empty %}
+	<p> No booking requests right now.</p>
+	{% endfor %}
+</div>
+{% endpartialdef %}

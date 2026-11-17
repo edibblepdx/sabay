@@ -1,0 +1,47 @@
+{% load static %}
+
+{% partialdef open-jobs %}
+<div class="bookings-container">
+	{% for job in open_jobs %}
+	<div class="job-card">
+		<div class="ls-card">
+			<div class="img-container">
+				{% if job.seeker.photo %}
+					<img src=" {{ job.seeker.photo.url }}" alt="seeker profile picture">
+				{% else %}
+					<span class="small-profile-initials" aria-hidden="true">{% if job.seeker.user.first_name %}{{ job.seeker.user.first_name|first|upper }}{{ job.seeker.user.last_name|first|upper }}{% else %}{{ job.seeker.user.username|first|upper }}{% endif %}</span>
+				{% endif %}
+			</div>
+			<div class="job-info">
+				{% with duration=job.schedule_end|timeuntil:job.schedule_start %}
+					<span>{{ job.seeker.user.get_full_name }}</span>
+					<p>{{ job.task_type }} &middot; {{ duration }} </p>
+					<!-- https://docs.djangoproject.com/en/6.1/ref/templates/builtins/#date -->
+					<p>{{ job.schedule_start|date:"D, M j" }} &middot; {{ job.schedule_start|time:"g:i A" }} &middot; {{job.city}}, {{job.state}}</p> 
+					{% endwith %}
+			</div>
+		</div>
+		<div class="options">
+
+			<a class="button" href="{% url 'booking:job_list' %}?job={{ job.pk }}#job-detail">Details</a>
+			{% if job.my_status == "pending" %}
+				<span class="job-req-status pending">Requested &middot; waiting on seeker</span>
+			{% elif job.my_status == "declined" %}
+				<span class="job-req-status declined">Not selected</span>
+				<form method="post" action="{% url 'members:dismiss_request' job.id %}" class="dismiss-form">
+					{% csrf_token %}
+					<button type="submit" name="action" class="icon-btn" aria-label="Remove from list" title="Remove">✕</button>
+				</form>	
+			{% else %}
+				<form method="post" action={% url "members:job_request" job.id %}>
+					{% csrf_token %}
+					<button type="submit" name="action"> Requeset </button>
+				</form>
+			{% endif %}
+		</div>
+	</div>
+	{% empty %}
+	<p> No upcoming jobs.</p>
+	{% endfor %}
+</div>
+{% endpartialdef %}

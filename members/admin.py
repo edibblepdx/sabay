@@ -1,3 +1,4 @@
+# Register your models here.
 from django import forms
 from django.conf import settings
 from django.contrib import admin
@@ -5,8 +6,29 @@ from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.urls import reverse
 
-from .models import UserInvite
+from .models import Cert, Provider, ProviderCert, Seeker, Specialty, UserInvite
 
+admin.site.register(Cert)
+admin.site.register(ProviderCert)
+admin.site.register(Seeker)
+
+
+# Helps in admin console with interactivity
+@admin.register(Specialty)
+class SpecialtyAdmin(admin.ModelAdmin):
+    search_fields = ("name",)
+
+
+class ProviderCertInline(admin.TabularInline):
+    model = ProviderCert
+    extra = 1
+
+
+@admin.register(Provider)
+class ProviderAdmin(admin.ModelAdmin):
+    list_display = ("user", "city", "is_available")
+    autocomplete_fields = ("specialties",)
+    inlines = [ProviderCertInline]
 
 class UserInviteAdminForm(forms.ModelForm):
     class Meta:
@@ -30,6 +52,7 @@ class UserInviteAdminForm(forms.ModelForm):
             )
 
         return email
+
 @admin.register(UserInvite)
 class UserInviteAdmin(admin.ModelAdmin):
     form = UserInviteAdminForm

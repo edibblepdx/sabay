@@ -17,13 +17,46 @@ Including another URLconf
 
 from django.urls import path
 
-from . import views
+from . import seeker_views, views
 
 app_name = "members"
 
 urlpatterns = [
     path("login/", views.login, name="login"),
     path("logout/", views.logout, name="logout"),
+    path("api/cities/", views.city_autofill, name="city_suggestions"),
+    path("toggle-availability/", views.toggle_availability, name="toggle_availability"),
+    path("profile/", seeker_views.seeker_profile, name="seeker_profile"),
+    path("profile/edit/", seeker_views.seeker_profile_edit, name="seeker_profile_edit"),
+    path("dashboard/", seeker_views.seeker_dashboard, name="seeker_dashboard"),
+    path("provider-edit", views.provider_profile_edit, name="provider_profile_edit"),
+    path(
+        "provider-edit/picture/upload/",
+        views.add_profile_picture,
+        name="add_profile_picture",
+    ),
+    path(
+        "provider-edit/picture/remove/",
+        views.remove_profile_picture,
+        name="remove_profile_picture",
+    ),
+    path(
+        "provider-edit/save/",
+        views.update_provider_profile,
+        name="update_provider_profile",
+    ),
+    path(
+        "provider-edit/certificates/add/", views.add_certificate, name="add_certificate"
+    ),
+    path("job-response/<int:job_id>/", views.job_response, name="job_response"),
+    path("jobs/<int:job_id>/request/", views.job_request, name="job_request"),
+    path("jobs/<int:job_id>/cancel/", views.cancel_job, name="cancel_job"),
+    path("jobs/<int:job_id>/complete/", views.complete_job, name="complete_job"),
+    path(
+        "jobs/<int:job_id>/dismiss_request/",
+        views.dismiss_request,
+        name="dismiss_request",
+    ),
     path("signup/", views.signup, name="signup"),
     path(
         "signup/invite/<str:token>/",
