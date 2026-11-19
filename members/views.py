@@ -78,7 +78,9 @@ def invite_signup(request, token):
         else:
             with transaction.atomic():
                 # Assign the role selected by the admin.
-                group, _ = Group.objects.get_or_create(name=invite.get_role_display())
+                group, _ = Group.objects.get_or_create(
+                    name=invite.get_role_display()
+                )
 
                 user = User.objects.create_user(
                     username=username,

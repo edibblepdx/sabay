@@ -43,7 +43,7 @@ class Seeker(models.Model):
         )
 
     def __str__(self):
-        return f"Sekeer: {self.user}"
+        return f"Seeker: {self.user}"
 
 
 class Provider(models.Model):

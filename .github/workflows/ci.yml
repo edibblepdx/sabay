@@ -30,6 +30,8 @@ jobs:
     name: Django tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      DJANGO_SECRET_KEY: "ci-only-test-key-not-for-production"
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
