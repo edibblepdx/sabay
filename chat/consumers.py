@@ -110,8 +110,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             )
             return
 
-        message = await self.save_message(content["message"])
-
         if not await self.is_room_member(self.room_id):
             await self.unsubscribe_from_room()
             await self.send_json(
@@ -122,6 +120,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             )
             return
 
+        message = await self.save_message(content["message"])
         json_message = ser_message(message)
 
         # Send message to room group
@@ -232,21 +231,19 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         )
 
     # Return true if user is a member of the room
-    @database_sync_to_async
-    def is_room_member(self, room_id):
-        return RoomMember.objects.filter(
+    async def is_room_member(self, room_id):
+        return await RoomMember.objects.filter(
             user_id=self.user_id,
             room_id=room_id,
-        ).exists()
+        ).aexists()
 
     # Set read_at field in RoomMember table
-    @database_sync_to_async
-    def mark_room_read(self, room_id):
+    async def mark_room_read(self, room_id):
         if room_id is not None:
-            RoomMember.objects.filter(
+            await RoomMember.objects.filter(
                 user_id=self.user_id,
                 room_id=room_id,
-            ).update(read_at=timezone.now())
+            ).aupdate(read_at=timezone.now())
 
 
 # Serialize message
