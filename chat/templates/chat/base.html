@@ -63,6 +63,8 @@
     }, 30000);
   </script>
 
+  <div id="room-meta" data-role="{{ room_meta.role }}"></div>
+
   <main class="chat-page">
     <div class="chat-layout">
 
@@ -72,14 +74,13 @@
       </div>
 
       {# Active conversation #}
-      <div class="active-thread">
+      <div class="active-thread" aria-label="Active Conversation">
         {% include './conversation.html' %}
       </div>
 
       {# Details right #}
-      <div class="sidebar-right">
+      <div class="sidebar-right" aria-label="Details">
         {% include './details.html' %}
-        {% include './suggestions.html' %}
       </div>
 
     </div>

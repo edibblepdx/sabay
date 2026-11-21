@@ -12,39 +12,76 @@ def render_chat(request, template_name, context=None, **kwargs):
 
     room_id = context.get("room_id")
 
-    room = (
-        get_object_or_404(
-            Room,
-            pk=room_id,
-            roommember__user=user,
-        )
-        if room_id
-        else None
+    member = (
+        get_object_or_404(RoomMember, room_id=room_id, user=user) if room_id else None
+    )
+
+    room = member.room if member else None
+
+    room_meta = (
+        {
+            "role": member.role,
+        }
+        if room
+        else {
+            "role": None,
+        }
     )
 
     context = {
         **context,
-        "user_profiles": get_user_profiles(user),
+        "room_meta": room_meta,
         "room_queryset": build_room_queryset(user),
-        "job_context": get_room_job_context(room) if room else None,
     }
 
     return render(request, template_name, context, **kwargs)
 
 
-def get_user_profiles(user):
+def get_provider(room):
+    member = (
+        RoomMember.objects.filter(
+            room=room,
+            role=RoomMember.Role.PROVIDER,
+        )
+        .select_related("user")
+        .first()
+    )
+
+    user = member.user if member else None
+
+    profile = getattr(user, "provider_profile", None) if user else None
+
     return {
-        "provider": getattr(user, "provider_profile", None),
-        "seeker": getattr(user, "seeker_profile", None),
+        "provider": {
+            "user": user,
+            "profile": profile,
+        },
+    }
+
+
+def get_seeker(room):
+    member = (
+        RoomMember.objects.filter(
+            room=room,
+            role=RoomMember.Role.SEEKER,
+        )
+        .select_related("user")
+        .first()
+    )
+
+    user = member.user if member else None
+
+    profile = getattr(user, "seeker_profile", None) if user else None
+
+    return {
+        "seeker": {
+            "user": user,
+            "profile": profile,
+        }
     }
 
 
 def build_room_queryset(user):
-    role = RoomMember.objects.filter(
-        room=OuterRef("pk"),
-        user=user,
-    ).values("role")[:1]
-
     read_at = RoomMember.objects.filter(
         room=OuterRef("pk"),
         user=user,
@@ -98,7 +135,6 @@ def build_room_queryset(user):
             Room.objects.filter(roommember__user=user)
             .annotate(
                 # User and Room meta
-                role=Subquery(role),
                 read_at=Subquery(read_at),
                 last_message=Subquery(last_message),
             )
@@ -189,3 +225,29 @@ def conversation(request, room_id):
     # Check room membership
     _ = get_object_or_404(RoomMember, user=request.user, room_id=room_id)
     return render_chat(request, "chat/index.html", {"room_id": room_id})
+
+
+@login_required
+def profile_card(request, room_id, role):
+    member = get_object_or_404(RoomMember, user=request.user, room_id=room_id)
+    room = member.room
+
+    # Get the other person's information
+    if role == RoomMember.Role.SEEKER:
+        person = get_seeker(room)["seeker"]
+        role = "seeker"
+    elif role == RoomMember.Role.PROVIDER:
+        person = get_provider(room)["provider"]
+        role = "provider"
+    else:
+        person = None
+        role = None
+
+    return render(
+        request,
+        "chat/partials/_profile_card.html#profile_card",
+        {
+            "person": person,
+            "role": role,
+        },
+    )

@@ -17,4 +17,3 @@ class ChatTemplateTestCase(ChatTestMixin, TestCase):
         self.assertTemplateUsed(response, "chat/conversations.html")
         self.assertTemplateUsed(response, "chat/conversation.html")
         self.assertTemplateUsed(response, "chat/details.html")
-        self.assertTemplateUsed(response, "chat/suggestions.html")

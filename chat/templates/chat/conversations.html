@@ -90,6 +90,10 @@
       const item = list?.querySelector(`[data-room="${data.room_id}"]`);
 
       if (item) {
+        item
+          .querySelector(".conversation-preview-message")
+          .textContent = data.last_message.message;
+
         list.prepend(item);
 
         if (item.dataset.room !== window.currentRoom) {
