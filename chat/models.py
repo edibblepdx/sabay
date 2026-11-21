@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models.functions import Now
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 class Room(models.Model):
@@ -13,16 +14,35 @@ class Room(models.Model):
 
 
 class RoomMember(models.Model):
+    class Role(models.TextChoices):
+        SEEKER = "seeker", _("Seeker")
+        PROVIDER = "provider", _("Provider")
+        COORDINATOR = "coordinator", _("Coordinator")
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     room = models.ForeignKey("Room", on_delete=models.CASCADE)
     joined_at = models.DateTimeField(default=timezone.now)  # keep modifiable
     read_at = models.DateTimeField(default=timezone.now)  # keep modifiable
+    role = models.CharField(
+        max_length=20,
+        choices=Role.choices,
+    )
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "room"],
-                name="unique_user_room",
+                name="unique_user_room_pair",
+            ),
+            models.UniqueConstraint(
+                fields=["room"],
+                condition=models.Q(role="seeker"),
+                name="unique_seeker_per_room",
+            ),
+            models.UniqueConstraint(
+                fields=["room"],
+                condition=models.Q(role="provider"),
+                name="unique_provider_per_room",
             ),
         ]
 
