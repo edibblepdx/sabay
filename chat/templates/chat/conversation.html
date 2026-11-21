@@ -129,11 +129,17 @@
 
       case 'chat.message':
         if (data.message.room_id === window.currentRoom) {
+          const nearBottom = isNearBottom();
+
           appendMessage(data.message);
 
           if (data.message.user_id !== window.currentUser) {
             window.setUnread(data.message.room_id, true);
-            scrollButton.hidden = isNearBottom();
+            scrollButton.hidden = nearBottom;
+          }
+
+          if (nearBottom) {
+            scrollToBottom();
           }
         }
         break;
