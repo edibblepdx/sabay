@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
+
 import os
 from pathlib import Path
 
@@ -19,9 +20,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
+SECRET_KEY = "django-insecure-dn66da_8b!9tl95v9c((1-%@3f(@fzn51b0fu4-q)l9a!l(#l7"
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() == "true"
+DEBUG = True
 
 ALLOWED_HOSTS = ["sabay.org", "localhost", "127.0.0.1"]
 
@@ -142,7 +143,7 @@ REDIRECT_URL_LOGOUT = "home"
 
 # Development email configuration
 # Prints emails to the terminal instead of actually sending them.
-#EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Email configuration
 # Default to console email for local development
@@ -164,4 +165,4 @@ DEFAULT_FROM_EMAIL = os.environ.get(
     "Sabay <noreply@sabay.org>",
 )
 
-#DEFAULT_FROM_EMAIL = "noreply@sabay.local"
+# DEFAULT_FROM_EMAIL = "noreply@sabay.local"
