@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.db.models import Exists, OuterRef, Subquery
+from django.db.models import Exists, OuterRef, Subquery, Prefetch
 from django.shortcuts import get_object_or_404, render
 
 from chat.models import Message, Room, RoomMember
@@ -32,7 +32,11 @@ def render_chat(request, template_name, context=None, **kwargs):
     context = {
         **(context or {}),
         "room_queryset": room_queryset.prefetch_related(
-            "roommember_set__user"
+            Prefetch(
+                "roommember_set",
+                queryset=RoomMember.objects.exclude(user=user).select_related("user"),
+                to_attr="other_members",
+            )
         ).order_by("-last_message_at"),
     }
 

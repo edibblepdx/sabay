@@ -11,7 +11,7 @@
         <i>{{ room.id|stringformat:"s"|slice:":8" }}</i><br/>
         -->
 
-        {% for member in room.roommember_set.all %}
+        {% for member in room.other_members %}
           {{ member.user.username }}{% if not forloop.last %}, {% endif %}
         {% endfor %}
       </span>
