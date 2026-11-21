@@ -30,6 +30,12 @@
 	--mocha: #7a5a46;
 	--gold: #e0a84a;
 
+    /* Status Palette */
+    --status-accepted-background: #e3efe2;
+    --status-accepted-color: #2f5d2c;
+    --status-requested-background: #fbeccb;
+    --status-requested-color: #7a4f0e;
+
 	/*
 	 * Shared content width for dashboard, edit profile and job board:
 	 * 1100px on laptops, growing to 75% of the window on big monitors.
