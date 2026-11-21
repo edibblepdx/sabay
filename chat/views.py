@@ -18,10 +18,15 @@ def render_chat(request, template_name, context=None, **kwargs):
         created_at__gt=OuterRef("member_read_at"),
     ).exclude(user=user)
 
+    last_message = Message.objects.filter(
+        room=OuterRef("pk"),
+    ).order_by("-created_at")
+
     room_queryset = (
         Room.objects.filter(roommember__user=user)
         .annotate(member_read_at=Subquery(member_read_at))
         .annotate(has_unread=Exists(unread_messages))
+        .annotate(last_message=Subquery(last_message.values("message")[:1]))
     )
 
     context = {

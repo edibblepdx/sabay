@@ -1,11 +1,18 @@
 <!-- Message history -->
 <ol id="chat-log"></ol>
 
-<button
-  id="scroll-to-bottom"
-  type="button"
-  aria-label="Scroll to latest message"
-> ↓ </button>
+<div id="scroll-button" hidden>
+  <button
+    id="scroll-ignore"
+    type="button"
+    aria-label="Ignore latest message"
+  > 🗙 </button>
+  <button
+    id="scroll-to-bottom"
+    type="button"
+    aria-label="Scroll to latest message"
+  > new messages ↓ </button>
+</div>
 
 <!-- Message input -->
 <div id="chat-input" hidden>
@@ -40,7 +47,9 @@
   // DOM elements
   const chatLog = document.querySelector('#chat-log');
   const chatInput = document.querySelector('#chat-input');
-  const scrollButton = document.querySelector('#scroll-to-bottom');
+  const scrollButton = document.querySelector('#scroll-button');
+  const scrollBottomButton = document.querySelector('#scroll-to-bottom');
+  const scrollIgnoreButton = document.querySelector('#scroll-ignore');
   const messageTemplate = document.querySelector("#message-template");
   const messageInput = document.querySelector('#chat-message-input');
   const messageSubmit = document.querySelector('#chat-message-submit');
@@ -124,10 +133,7 @@
 
           if (data.message.user_id !== window.currentUser) {
             window.setUnread(data.message.room_id, true);
-          }
-
-          if (isNearBottom()) {
-            scrollToBottom();
+            scrollButton.hidden = isNearBottom();
           }
         }
         break;
@@ -135,20 +141,26 @@
   });
 
   chatLog.addEventListener('scroll', () => {
-    const nearBottom = isNearBottom();
-    scrollButton.hidden = nearBottom;
-
     const item = document.querySelector(
       `.conversation-item[data-room="${window.currentRoom}"]`
     );
 
-    if (nearBottom && item?.classList.contains('unread')) {
-      window.chatSocket.send(JSON.stringify({type: 'room.read'}));
-      window.setUnread(window.currentRoom, false);
+    if (isNearBottom()) {
+      scrollButton.hidden = true;
+
+      if (item?.classList.contains('unread')) {
+        window.chatSocket.send(JSON.stringify({type: 'room.read'}));
+        window.setUnread(window.currentRoom, false);
+      }
     }
   });
 
-  scrollButton.addEventListener('click', scrollToBottom);
+  scrollBottomButton.addEventListener('click', scrollToBottom);
+
+  scrollIgnoreButton.addEventListener('click', () => {
+    scrollButton.hidden = true;
+    window.setUnread(window.currentRoom, false);
+  });
 
   messageInput.addEventListener('keyup', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {  // enter, return

@@ -16,8 +16,12 @@
         {% endfor %}
       </span>
 
-      <span class="conversation-preview">
+      <span class="conversation-date">
         {{ room.last_message_at }}
+      </span>
+
+      <span class="conversation-preview-message">
+        {{ room.last_message }}
       </span>
 
     </li>
