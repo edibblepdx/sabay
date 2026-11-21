@@ -16,6 +16,19 @@
         {% endfor %}
       </span>
 
+      {% if room.has_accepted_request or room.has_pending_request %}
+        <span class="conversation-job-status {% if room.has_accepted_request %}accepted{% elif room.has_pending_request %}requested{% endif %}">
+          {% if room.has_accepted_request %}
+              Accepted
+          {% elif room.has_pending_request %}
+            Requested
+          {% endif %}
+          {% if room.accepted_request_type or room.seeker_request_type or room.provider_request_type %}
+            • {% firstof room.accepted_request_type room.seeker_request_type room.provider_request_type %}
+          {% endif %}
+        </span>
+      {% endif %}
+
       <span class="conversation-date">
         {{ room.last_message_at }}
       </span>

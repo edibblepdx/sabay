@@ -123,6 +123,25 @@ body {
   opacity: 0.5;
 }
 
+.chat-page .conversation-job-status {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--chat-border-radius);
+  font-size: var(--chat-font-size-small);
+}
+
+.chat-page .conversation-job-status.accepted {
+  background: var(--status-accepted-background);
+  color: var(--status-accepted-color);
+  border: 1px solid var(--status-accepted-color);
+}
+
+.chat-page .conversation-job-status.requested {
+  background: var(--status-requested-background);
+  color: var(--status-requested-color);
+  border: 1px solid var(--status-requested-color);
+}
+
 .chat-page .conversation-preview-message {
   font-size: var(--chat-font-size-small);
   opacity: 0.75;
