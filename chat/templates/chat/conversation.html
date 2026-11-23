@@ -24,8 +24,9 @@
 
 <!-- Message template -->
 <template id="message-template">
-  <li class="message">
-    <div>
+  <li class="message-container">
+    <div class="message-profile-picture"></div>
+    <div class="message">
       <div class="message-header">
         <span class="message-author"></span>
         <time class="message-date"></time>
@@ -62,9 +63,33 @@
   function appendMessage(m) {
     const message = messageTemplate.content.cloneNode(true);
     const element = message.querySelector('.message');
+    const user = m.user;
 
-    message.querySelector(".message-author").textContent = m.username;
+    message.querySelector(".message-author").textContent =
+      user?.username || "unknown";
+
     message.querySelector(".message-content").textContent = m.message;
+
+    const pictureContainer = message.querySelector(".message-profile-picture");
+
+    if (user?.picture) {
+      const img = document.createElement("img");
+      img.src = user.picture;
+      img.alt = `${user.username}'s profile picture`;
+      pictureContainer.appendChild(img);
+    } else {
+      const initials = document.createElement("span");
+      initials.classList.add("profile-initials");
+      initials.setAttribute("aria-hidden", "true");
+
+      initials.textContent = user
+        ? user.first_name
+          ? `${user.first_name[0]}${user.last_name?.[0] || ""}`.toUpperCase()
+          : user.username?.[0]?.toUpperCase() || ""
+        : "?";
+
+      pictureContainer.appendChild(initials);
+    }
 
     const time = message.querySelector(".message-date");
     time.dateTime = message.created_at;

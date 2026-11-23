@@ -116,7 +116,7 @@ body {
 
 .chat-page .conversation-date {
   font-size: var(--chat-font-size-small);
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
 .chat-page .conversation-job-status {
@@ -147,7 +147,7 @@ body {
 
 .chat-page .conversation-preview-message {
   font-size: var(--chat-font-size-small);
-  opacity: 0.75;
+  opacity: 0.8;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -252,38 +252,63 @@ body {
 }
 
 /* Messages */
+.message-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
 .message {
+  flex: 1;
   padding: var(--chat-spacing-big);
   margin: var(--chat-spacing-big);
   border-radius: var(--chat-border-radius);
   box-shadow: var(--chat-shadow-style);
   background: var(--chat-surface);
-}
-
-.message:last-child {
-  border-bottom: none;
+  border-bottom: var(--chat-border-style);
 }
 
 .message-header {
-  display: flex;
-  align-items: center;
+  display: block;
   padding: 0px 5px 5px 0px;
 }
 
 .message-author {
   font-weight: bold;
+  align-self: flex-end;
 }
 
 .message-date {
   font-size: var(--chat-font-size-small);
-  opacity: 0.5;
-  margin-left: auto;
+  opacity: 0.6;
+  margin-left: var(--chat-spacing);
 }
 
 .message-content {
   margin: 4px 0;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.message-profile-picture {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--chat-hover);
+  border: var(--chat-border-style);
+  margin-left: var(--chat-spacing-big);
+  margin-top: var(--chat-spacing-big);
+}
+
+.profile-profile-picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* Unread divisor */

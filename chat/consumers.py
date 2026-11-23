@@ -4,6 +4,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from chat.models import Message, Room, RoomMember
+from members.models import Seeker, Provider
 
 
 def room_message_transaction(func):
@@ -123,7 +124,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             return
 
         message = await self.save_message(content["message"])
-        json_message = ser_message(message)
+        json_message = await ser_message(message)
 
         # Send message to room group
         await self.channel_layer.group_send(
@@ -188,7 +189,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 "type": "chat.history",
                 "room_id": str(self.room_id),
                 "room_role": str(self.room_role),
-                "messages": [ser_message(m) for m in messages],
+                "messages": [await ser_message(m) for m in messages],
                 "read_at": read_at.isoformat() if read_at else None,
             }
         )
@@ -256,12 +257,43 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             ).aupdate(read_at=timezone.now())
 
 
+# Get user profile picture
+async def get_profile_picture(user_id):
+    profile = await Seeker.objects.filter(user_id=user_id).afirst()
+
+    if profile is None:
+        profile = await Provider.objects.filter(user_id=user_id).afirst()
+
+    if not profile:
+        return None
+
+    picture = getattr(profile, "profilePicture", None) or getattr(
+        profile, "photo", None
+    )
+
+    return picture.url if picture else None
+
+
 # Serialize message
-def ser_message(m):
+async def ser_message(m):
+    # Grab the profile picture as well
+    picture = await get_profile_picture(m.user.id) if m.user else None
+
     return {
         "room_id": str(m.room_id),
         "user_id": str(m.user.id) if m.user else None,
+        "user": {
+            "username": m.user.username,
+            "first_name": m.user.first_name,
+            "last_name": m.user.last_name,
+            "picture": picture,
+        }
+        if m.user
+        else {
+            "username": None,
+            "first_name": None,
+            "last_name": None,
+        },
         "message": m.message,
-        "username": m.user.username if m.user else None,
         "created_at": m.created_at.isoformat(),
     }
