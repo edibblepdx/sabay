@@ -139,6 +139,12 @@ body {
   border: 1px solid var(--status-requested-color);
 }
 
+.chat-page .conversation-job-status.extra {
+  background: var(--chat-surface);
+  color: var(--text-light);
+  border: 1px solid var(--accent);
+}
+
 .chat-page .conversation-preview-message {
   font-size: var(--chat-font-size-small);
   opacity: 0.75;

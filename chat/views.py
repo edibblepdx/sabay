@@ -1,9 +1,18 @@
 from django.contrib.auth.decorators import login_required
-from django.db.models import Exists, OuterRef, Subquery, Prefetch
+from django.db.models import (
+    Count,
+    Exists,
+    OuterRef,
+    Prefetch,
+    Q,
+    Subquery,
+    Value,
+)
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404, render
 
-from chat.models import Message, Room, RoomMember
 from booking.models import JobPost, JobReq
+from chat.models import Message, Room, RoomMember
 
 
 def render_chat(request, template_name, context=None, **kwargs):
@@ -110,25 +119,41 @@ def build_room_queryset(user):
         role=RoomMember.Role.PROVIDER,
     ).values("user_id")[:1]
 
-    accepted_request_type = JobPost.objects.filter(
+    accepted_requests = JobPost.objects.filter(
         seeker__user_id=OuterRef("seeker_user_id"),
         provider__user_id=OuterRef("provider_user_id"),
         status="accepted",
-    ).values("task_type")[:1]
+    )
 
-    seeker_request_type = JobPost.objects.filter(
+    seeker_requests = JobPost.objects.filter(
         seeker__user_id=OuterRef("seeker_user_id"),
         provider__user_id=OuterRef("provider_user_id"),
         status="open",
-    ).values("task_type")[:1]
+    )
 
-    provider_request_type = JobReq.objects.filter(
+    provider_requests = JobReq.objects.filter(
         job__seeker__user_id=OuterRef("seeker_user_id"),
         provider__user_id=OuterRef("provider_user_id"),
         job__status="open",
         dismissed=False,
         status="pending",
-    ).values("job__task_type")[:1]
+    )
+
+    def request_count(queryset):
+        return Subquery(
+            queryset.annotate(total=Count("pk")).values("total")[:1],
+        )
+
+    accepted_request_count = request_count(accepted_requests)
+    seeker_request_count = request_count(seeker_requests)
+    provider_request_count = request_count(provider_requests)
+
+    def request_type(queryset, field):
+        return Subquery(queryset.order_by("-created_at").values(field)[:1])
+
+    accepted_request_type = request_type(accepted_requests, "task_type")
+    seeker_request_type = request_type(seeker_requests, "task_type")
+    provider_request_type = request_type(provider_requests, "job__task_type")
 
     room_queryset = (
         (
@@ -144,18 +169,34 @@ def build_room_queryset(user):
                 provider_user_id=Subquery(provider_user_id),
             )
             .annotate(
+                # Request counts
+                accepted_request_count=accepted_request_count,
+                seeker_request_count=seeker_request_count,
+                provider_request_count=provider_request_count,
+            )
+            .annotate(
+                # Request count sums
+                total_request_count=(
+                    Coalesce(accepted_request_count, Value(0))
+                    + Coalesce(seeker_request_count, Value(0))
+                    + Coalesce(provider_request_count, Value(0))
+                ),
+                pending_request_count=(
+                    Coalesce(seeker_request_count, Value(0))
+                    + Coalesce(provider_request_count, Value(0))
+                ),
+            )
+            .annotate(
                 # Request types
-                accepted_request_type=Subquery(accepted_request_type),
-                seeker_request_type=Subquery(seeker_request_type),
-                provider_request_type=Subquery(provider_request_type),
+                accepted_request_type=accepted_request_type,
+                seeker_request_type=seeker_request_type,
+                provider_request_type=provider_request_type,
             )
             .annotate(
                 # Exists queries
                 has_unread=Exists(unread_messages),
-                has_accepted_request=Exists(accepted_request_type),
-                has_pending_request=(
-                    Exists(seeker_request_type) | Exists(provider_request_type)
-                ),
+                has_accepted_request=Q(accepted_request_count__gt=0),
+                has_pending_request=Q(pending_request_count__gt=0),
             )
         )
         .prefetch_related(

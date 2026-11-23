@@ -18,15 +18,28 @@
 
       {% if room.has_accepted_request or room.has_pending_request %}
         <span class="conversation-job-status {% if room.has_accepted_request %}accepted{% elif room.has_pending_request %}requested{% endif %}">
+          <!--
+            Prefer most recent Accepted requests
+            Otherwise show most recent Pending request (seeker > provider)
+            Then show a count of the remaining requests
+          -->
           {% if room.has_accepted_request %}
-              Accepted
+            Accepted
+            {% if room.accepted_request_type %}
+              • {{ room.accepted_request_type }}
+            {% endif %}
           {% elif room.has_pending_request %}
             Requested
-          {% endif %}
-          {% if room.accepted_request_type or room.seeker_request_type or room.provider_request_type %}
-            • {% firstof room.accepted_request_type room.seeker_request_type room.provider_request_type %}
+            {% if room.seeker_request_type or room.provider_request_type %}
+              • {% firstof room.seeker_request_type room.provider_request_type %}
+            {% endif %}
           {% endif %}
         </span>
+        {% if room.total_request_count > 1 %}
+          <span class="conversation-job-status extra">
+            +{{ room.total_request_count|add:"-1" }}
+          </span>
+        {% endif %}
       {% endif %}
 
       <span class="conversation-date">
