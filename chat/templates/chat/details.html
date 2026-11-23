@@ -2,11 +2,10 @@
 
 <script>
 (() => {
-  async function updateProfileDetail(roomId) {
+  async function updateProfileDetail(roomId, role) {
     const detail = document.querySelector("#profile-card");
-    const role = document.querySelector("#room-meta").dataset.role;
 
-    let fetchRole = "invalid"
+    let fetchRole = "none"
     if (role === "seeker" || role === "coordinator") {
       fetchRole = "provider"
     } else if (role === "provider") {
@@ -24,7 +23,7 @@
     const data = JSON.parse(e.data);
 
     if (data.type === "chat.history") {
-      updateProfileDetail(data.room_id);
+      updateProfileDetail(data.room_id, data.room_role);
     }
   });
 })();

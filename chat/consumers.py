@@ -28,6 +28,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         self.room_id = None
         self.room_group_name = None
 
+        self.room_role = None
+
         user = self.scope["user"]
 
         if not user.is_authenticated:
@@ -172,6 +174,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         # Join new room
         self.room_id = room_id
+        self.room_role = await self.get_member_role(self.room_id)
         self.room_group_name = f"chat_{self.room_id}"
 
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
@@ -184,6 +187,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             {
                 "type": "chat.history",
                 "room_id": str(self.room_id),
+                "room_role": str(self.room_role),
                 "messages": [ser_message(m) for m in messages],
                 "read_at": read_at.isoformat() if read_at else None,
             }
@@ -214,11 +218,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     # Get read date
     async def get_read_at(self):
-        member = await RoomMember.objects.aget(
+        return await RoomMember.objects.values_list("read_at", flat=True).aget(
             user_id=self.user_id,
             room_id=self.room_id,
         )
-        return member.read_at
 
     # Save message to database
     @room_message_transaction
@@ -236,6 +239,13 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             user_id=self.user_id,
             room_id=room_id,
         ).aexists()
+
+    # Get member role
+    async def get_member_role(self, room_id):
+        return await RoomMember.objects.values_list("role", flat=True).aget(
+            room_id=room_id,
+            user=self.scope["user"],
+        )
 
     # Set read_at field in RoomMember table
     async def mark_room_read(self, room_id):

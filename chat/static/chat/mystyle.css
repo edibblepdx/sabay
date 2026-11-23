@@ -90,7 +90,7 @@ body {
 
 .chat-page .conversation-item {
   display: block;
-  padding: 10px 8px;
+  padding: var(--chat-spacing);
   cursor: pointer;
   border-bottom: var(--chat-border-style);
 }
@@ -107,6 +107,7 @@ body {
 .chat-page .conversation-date,
 .chat-page .conversation-preview-message {
   display: block;
+  margin-left: 4px;
 }
 
 .chat-page .conversation-name {
@@ -353,6 +354,17 @@ body {
   border: var(--chat-border-style);
   font-size: var(--chat-font-size-small);
   font-weight: var(--chat-semi-bold);
+}
+
+/* Request banner */
+.chat-page .request-banner {
+  display: flex;
+  flex-direction: row;
+  gap: var(--chat-spacing);
+  padding: var(--chat-spacing-big);
+  background: var(--chat-surface);
+  border-bottom: var(--chat-border-style);
+  align-items: center;
 }
 
 /* Supporting text */
