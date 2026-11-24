@@ -33,8 +33,7 @@
       <div class="profile-card-info">
         <h3>{{ user.username }}</h3>
         <span>
-          {{ profile.city }}
-          {% if profile.city %}, {% endif %}
+          {{ profile.city }}{% if profile.city and profile.state %},{% endif %}
           {{ profile.state }}
         </span>
         <span class="profile-role">{{ role }}</span>
