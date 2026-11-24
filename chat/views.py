@@ -45,7 +45,7 @@ def render_chat(request, template_name, context=None, **kwargs):
     context = {
         **context,
         "room_meta": room_meta,
-        "room_queryset": build_room_queryset(user),
+        "room_queryset": build_room_queryset(user, room_id),
     }
 
     return render(request, template_name, context, **kwargs)
@@ -95,7 +95,7 @@ def get_seeker(room):
     }
 
 
-def build_room_queryset(user):
+def build_room_queryset(user, current_room_id):
     read_at = RoomMember.objects.filter(
         room=OuterRef("pk"),
         user=user,
@@ -162,7 +162,10 @@ def build_room_queryset(user):
 
     room_queryset = (
         (
-            Room.objects.filter(roommember__user=user)
+            Room.objects.filter(
+                Q(last_message_at__isnull=False) | Q(pk=current_room_id),
+                roommember__user=user,
+            )
             .annotate(
                 # User and Room meta
                 read_at=Subquery(read_at),
@@ -212,7 +215,7 @@ def build_room_queryset(user):
             )
         )
         .order_by("-last_message_at")
-    ).filter(last_message_at__isnull=False)
+    )
 
     return room_queryset
 
@@ -358,10 +361,12 @@ def new(request):
     RoomMember.objects.create(
         room=room,
         user=request.user,
+        role=RoomMember.Role.SEEKER,
     )
     RoomMember.objects.create(
         room=room,
         user=other_user,
+        role=RoomMember.Role.PROVIDER,
     )
 
     return redirect("chat:conversation", room_id=room.pk)
