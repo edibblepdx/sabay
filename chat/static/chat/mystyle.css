@@ -235,10 +235,7 @@ body {
   color: var(--text-light);
 }
 
-#chat-message-submit {
-  flex-shrink: 0;
-  background: var(--accent);
-}
+#chat-message-submit {}
 
 /* Messages */
 .message-container {
