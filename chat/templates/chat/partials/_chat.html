@@ -1,0 +1,7 @@
+{% partialdef new %}
+<form method="POST" action="{% url 'chat:new' %}">
+  {% csrf_token %}
+  <input type="hidden" name="user_id" value="{{ user.id }}">
+  <button type="submit">Message</button>
+</form>
+{% endpartialdef %}

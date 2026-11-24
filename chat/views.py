@@ -9,10 +9,15 @@ from django.db.models import (
     Value,
 )
 from django.db.models.functions import Coalesce
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+from django.db import transaction
+from django.contrib.auth import get_user_model
 
 from booking.models import JobPost, JobReq
 from chat.models import Message, Room, RoomMember
+
+User = get_user_model()
 
 
 def render_chat(request, template_name, context=None, **kwargs):
@@ -207,7 +212,7 @@ def build_room_queryset(user):
             )
         )
         .order_by("-last_message_at")
-    )
+    ).filter(last_message_at__isnull=False)
 
     return room_queryset
 
@@ -303,3 +308,60 @@ def mobile_banner(request, room_id):
         "chat/partials/_mobile_banner.html#mobile_banner_info",
         {"room": room},
     )
+
+
+@login_required
+@require_POST
+@transaction.atomic
+def new(request):
+    other_user = get_object_or_404(
+        User,
+        pk=request.POST.get("user_id"),
+    )
+
+    if other_user == request.user:
+        return redirect("chat")
+
+    # Look for existing room
+
+    current_user_membership = RoomMember.objects.filter(
+        room=OuterRef("pk"),
+        user=request.user,
+    )
+
+    other_user_membership = RoomMember.objects.filter(
+        room=OuterRef("pk"),
+        user=other_user,
+    )
+
+    room = (
+        Room.objects.annotate(
+            has_current_user=Exists(current_user_membership),
+            has_other_user=Exists(other_user_membership),
+            member_count=Count("roommember"),
+        )
+        .filter(
+            has_current_user=True,
+            has_other_user=True,
+            member_count=2,
+        )
+        .first()
+    )
+
+    if room:
+        return redirect("chat:conversation", room_id=room.pk)
+
+    # Create new room
+
+    room = Room.objects.create()
+
+    RoomMember.objects.create(
+        room=room,
+        user=request.user,
+    )
+    RoomMember.objects.create(
+        room=room,
+        user=other_user,
+    )
+
+    return redirect("chat:conversation", room_id=room.pk)

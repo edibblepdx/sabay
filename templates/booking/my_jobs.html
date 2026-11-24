@@ -56,6 +56,7 @@
           <div class="board-seeker">
             <span class="board-avatar">{{ selected.provider.user.username|slice:":1"|upper }}</span>
             <div><strong>{{ selected.provider.user.username }}</strong><span>Your provider</span></div>
+            <div class="board-message-button">{% include "chat/partials/_chat.html#new" with user=selected.provider.user %}</div>
           </div>
         {% endif %}
 
@@ -79,6 +80,7 @@
           <div class="board-seeker">
             <span class="board-avatar">{{ req.provider.user.username|slice:":1"|upper }}</span>
             <div><strong>{{ req.provider.user.username }}</strong><span>Wants this job</span></div>
+            <div class="board-message-button">{% include "chat/partials/_chat.html#new" with user=req.provider.user %}</div>
           </div>
           <div class="board-actions">
             <form method="post" action="{% url 'booking:decline' req.pk %}">

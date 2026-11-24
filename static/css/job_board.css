@@ -249,6 +249,14 @@ a.board-card.is-selected {
 	color: var(--text-light);
 	font-size: 0.9rem;
 }
+.board-message-button {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+.board-message-button button {
+    margin: 0;
+}
 
 .board-actions {
 	display: flex;
