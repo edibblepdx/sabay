@@ -16,7 +16,7 @@
   - `pip install pipenv`
 * install project packages
   - `pipenv install`
-* setup local environment
+* set local environment variables
   - `export DJANGO_DEBUG=true`
   - `export DJANGO_SECRET_KEY=insecure-key`
 
