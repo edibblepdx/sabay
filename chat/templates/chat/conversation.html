@@ -65,7 +65,7 @@
 
   function appendMessage(m) {
     const message = messageTemplate.content.cloneNode(true);
-    const element = message.querySelector('.message');
+    const element = message.querySelector('.message-container');
     const user = m.user;
 
     message.querySelector(".message-author").textContent =
