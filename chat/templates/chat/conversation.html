@@ -1,3 +1,6 @@
+<!-- Mobile banner -->
+{% include 'chat/mobile_banner.html' %}
+
 <!-- Message history -->
 <ol id="chat-log"></ol>
 
@@ -131,6 +134,7 @@
       case 'chat.history':
         if (data.room_id === window.currentRoom) {
           clearMessages();
+          document.querySelector('.chat-page').classList.add('chat-open');
 
           const readAt = data.read_at ? new Date(data.read_at) : null;
           let dividerInserted = false;

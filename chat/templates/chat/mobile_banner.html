@@ -1,0 +1,63 @@
+<div class="mobile-banner">
+  <button id="back-to-conversations" type="button">
+    back
+  </button>
+
+  <div id="mobile-banner-info" class="mobile-banner-info"></div>
+
+  <!--
+  <button
+    id="back-to-dashboard"
+    type="button"
+    onclick="window.location.href='{% url 'dashboard' %}'"
+  >
+    Dashboard
+  </button>
+  -->
+</div>
+<script>
+(() => {
+  const backButton = document.querySelector("#back-to-conversations");
+  const mobileBannerInfo = document.querySelector("#mobile-banner-info");
+
+  async function updateMobileBanner(roomId) {
+    if (!roomId) {
+      mobileBannerInfo.innerHTML = "";
+      return;
+    } else if (roomId !== window.currentRoom) {
+      return;
+    }
+
+    const response = await fetch(`/chat/${roomId}/mobile-banner`);
+
+    if (response.ok) {
+      mobileBannerInfo.innerHTML = await response.text();
+    }
+  }
+
+  window.chatSocket.addEventListener("message", (e) => {
+    const data = JSON.parse(e.data);
+
+    if (data.type === "chat.history") {
+      updateMobileBanner(data.room_id);
+    }
+  });
+
+  backButton.addEventListener("click", () => {
+    window.currentRoom = null;
+    window.history.pushState({},"", "/chat/");
+
+    document.querySelector(".chat-page").classList.remove("chat-open");
+
+    updateMobileBanner(null);
+
+    window.chatSocket.send(JSON.stringify({
+      type: 'room.unsubscribe',
+    }));
+
+    document.querySelectorAll('.conversation-item').forEach((item) => {
+      item.classList.remove('active');
+    });
+  });
+})();
+</script>

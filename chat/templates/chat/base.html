@@ -7,6 +7,7 @@
 
 {% block extra_head %}
   <link rel="stylesheet" href="{% static 'chat/mystyle.css' %}" />
+  <link rel="stylesheet" href="{% static 'chat/mystyle.after.css' %}" />
 {% endblock %}
 
 {% block content %}
@@ -68,17 +69,17 @@
 
       {# List of conversations #}
       <div class="sidebar-left" aria-label="Conversations">
-        {% include './conversations.html' %}
+        {% include 'chat/conversations.html' %}
       </div>
 
       {# Active conversation #}
       <div class="active-thread" aria-label="Active Conversation">
-        {% include './conversation.html' %}
+        {% include 'chat/conversation.html' %}
       </div>
 
       {# Details right #}
       <div class="sidebar-right" aria-label="Details">
-        {% include './details.html' %}
+        {% include 'chat/details.html' %}
       </div>
 
     </div>

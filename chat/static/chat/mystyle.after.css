@@ -1,0 +1,61 @@
+/* Small screens */
+@media (max-width: 1024px) {
+  .chat-page .chat-layout {
+      grid-template-columns: 260px minmax(0, 1fr);
+  }
+
+  .chat-page .sidebar-right {
+    display: none;
+  }
+}
+
+/* Mobile screens */
+@media (max-width: 720px) {
+  main {
+    margin: 0;
+    padding: 0;
+    /* may break if nav style changes */
+    padding-top: 3rem;
+  }
+
+  body > footer {
+    display: none; 
+  }
+
+  /* Fill empty space */
+  .chat-page .chat-layout {
+    height: calc(100vh - 3rem);
+    border: none;
+    border-radius: 0;
+  }
+
+  /* Chat layout */
+  .chat-page .chat-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .chat-page .sidebar-left {
+    display: flex;
+    width: 100%;
+  }
+
+  .chat-page .active-thread {
+    display: none;
+    width: 100%;
+    border-left: none;
+  }
+
+  /* Room selected */
+  .chat-page.chat-open .sidebar-left {
+    display: none;
+  }
+
+  .chat-page.chat-open .active-thread {
+    display: flex;
+  }
+
+  /* Mobile banner */
+  .chat-page.chat-open .mobile-banner {
+    display: flex;
+  }
+}

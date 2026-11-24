@@ -64,16 +64,6 @@ body {
   overflow: hidden;
 }
 
-@media (max-width: 1000px) {
-  .chat-page .chat-layout {
-    grid-template-columns: 180px minmax(0, 1fr);
-  }
-
-  .chat-page .sidebar-right {
-    display: none;
-  }
-}
-
 /* Conversation list */
 .chat-page .conversation-items {
   display: flex;
@@ -225,8 +215,7 @@ body {
 /* Message Form */
 #chat-message-form {
   display: flex;
-  flex-shrink: 0;
-  align-items: flex-end;
+  align-items: center;
   gap: var(--chat-spacing);
   padding: var(--chat-spacing-big);
   background: var(--chat-surface);
@@ -387,7 +376,7 @@ body {
   font-weight: var(--chat-semi-bold);
 }
 
-/* Request banner */
+/* Request banner [UNUSED] */
 .chat-page .request-banner {
   display: flex;
   flex-direction: row;
@@ -396,6 +385,30 @@ body {
   background: var(--chat-surface);
   border-bottom: var(--chat-border-style);
   align-items: center;
+}
+
+/* Mobile banner */
+#back-to-conversations {
+  display: flex;
+}
+
+#back-to-dashboard {
+  display: flex;
+  margin-left: auto;
+}
+
+.mobile-banner {
+  display: none;
+  align-items: center;
+  gap: var(--chat-spacing);
+  padding: var(--chat-spacing-big);
+  background: var(--chat-surface);
+  border-bottom: var(--chat-border-style);
+}
+
+.mobile-banner-info {
+  display: block;
+  transform: translateY(calc(-1 * var(--chat-spacing)));
 }
 
 /* Supporting text */

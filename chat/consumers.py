@@ -4,7 +4,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from chat.models import Message, Room, RoomMember
-from members.models import Seeker, Provider
+from members.models import Provider, Seeker
 
 
 def room_message_transaction(func):

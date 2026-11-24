@@ -2,8 +2,15 @@
 
 <script>
 (() => {
+  const profileCard = document.querySelector("#profile-card");
+
   async function updateProfileDetail(roomId, role) {
-    const detail = document.querySelector("#profile-card");
+    if (!roomId) {
+      profileCard.innerHTML = "";
+      return;
+    } else if (roomId !== window.currentRoom) {
+      return;
+    }
 
     let fetchRole = "none"
     if (role === "seeker" || role === "coordinator") {
@@ -15,7 +22,7 @@
     const response = await fetch(`/chat/${roomId}/profile-card/${fetchRole}`);
 
     if (response.ok) {
-      detail.innerHTML = await response.text();
+      profileCard.innerHTML = await response.text();
     }
   }
 

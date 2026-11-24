@@ -1,0 +1,46 @@
+{% partialdef picture %}
+  <img
+    src="{{ picture.url }}"
+    alt="{{ user.get_full_name }}'s profile picture"
+  >
+{% endpartialdef%}
+
+{% partialdef profile_card %}
+  {% if person and person.user %}
+  {% with user=person.user profile=person.profile %}
+    <div class="profile-card">
+
+      <div class="profile-card-img-container">
+        {% if profile.profilePicture %}
+          {% with picture=profile.profilePicture %}
+            {% partial picture %}
+          {% endwith %}
+        {% elif profile.photo %}
+          {% with picture=profile.photo %}
+            {% partial picture %}
+          {% endwith %}
+        {% else %}
+          <span class="profile-initials" aria-hidden="true">
+            {% if user.first_name %}
+              {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+            {% else %}
+              {{ user.username|first|upper }}
+            {% endif %}
+          </span>
+        {% endif %}
+      </div>
+
+      <div class="profile-card-info">
+        <h3>{{ user.username }}</h3>
+        <span>
+          {{ profile.city }}
+          {% if profile.city %}, {% endif %}
+          {{ profile.state }}
+        </span>
+        <span class="profile-role">{{ role }}</span>
+      </div>
+
+    </div>
+  {% endwith %}
+  {% endif %}
+{% endpartialdef %}

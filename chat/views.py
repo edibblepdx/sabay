@@ -292,3 +292,14 @@ def profile_card(request, room_id, role):
             "role": role,
         },
     )
+
+
+@login_required
+def mobile_banner(request, room_id):
+    room = build_room_queryset(request.user).filter(id=room_id).first()
+
+    return render(
+        request,
+        "chat/partials/_mobile_banner.html#mobile_banner_info",
+        {"room": room},
+    )

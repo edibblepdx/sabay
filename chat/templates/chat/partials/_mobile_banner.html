@@ -1,0 +1,31 @@
+{% partialdef mobile_banner_info %}
+  {% if room %}
+    <div class="conversation-name">
+      {% for member in room.other_members %}
+        {{ member.user.username }}{% if not forloop.last %}, {% endif %}
+      {% endfor %}
+    </div>
+
+    {% if room.has_accepted_request or room.has_pending_request %}
+      <span class="conversation-job-status {% if room.has_accepted_request %}accepted{% elif room.has_pending_request %}requested{% endif %}">
+        {% if room.has_accepted_request %}
+          Accepted
+          {% if room.accepted_request_type %}
+            • {{ room.accepted_request_type }}
+          {% endif %}
+        {% elif room.has_pending_request %}
+          Requested
+          {% if room.seeker_request_type or room.provider_request_type %}
+            • {% firstof room.seeker_request_type room.provider_request_type %}
+          {% endif %}
+        {% endif %}
+      </span>
+
+      {% if room.total_request_count > 1 %}
+        <span class="conversation-job-status extra">
+          +{{ room.total_request_count|add:"-1" }}
+        </span>
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{% endpartialdef %}

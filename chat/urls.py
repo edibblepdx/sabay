@@ -12,4 +12,9 @@ urlpatterns = [
         views.profile_card,
         name="profile_card",
     ),
+    path(
+        "<uuid:room_id>/mobile-banner/",
+        views.mobile_banner,
+        name="mobile_banner",
+    ),
 ]
